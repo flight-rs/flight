@@ -8,4 +8,7 @@ authors = [
 ]
 
 [dependencies]
-open-vr = "*"
+rust-webvr = "*"
+cgmath = "*"
+gfx = "*"
+clap = "*"
