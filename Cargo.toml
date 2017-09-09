@@ -1,0 +1,11 @@
+[package]
+name = "vr-intro"
+version = "0.1.0"
+authors = [
+    "Sumner Evans <jonathanevans@mines.edu>",
+    "Sam Sartor <ssartor@mines.edu>",
+    "Robbie Merillat <rdmerillat@mines.edu>",
+]
+
+[dependencies]
+open-vr = "*"

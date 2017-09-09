@@ -118,3 +118,5 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/linux,windows,macos,vim,visualstudiocode,sublimetext
+/target/
+**/*.rs.bk
