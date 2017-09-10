@@ -8,9 +8,8 @@ extern crate simplelog;
 
 // Libraries
 use rust_webvr::VRServiceManager;
-use rust_webvr::api::OpenVRServiceCreator;
 
-use simplelog::TermLogger;
+use simplelog::{Config, TermLogger, LogLevelFilter};
 use clap::{Arg, App};
 
 fn main() {
@@ -33,11 +32,19 @@ fn main() {
         vrsm.register_defaults();
     }
 
-    println!("{:?}", vrsm.get_displays());
+    let displays = vrsm.get_displays();
+    println!("{}", displays.len());
 
     // Select first display
     let display = displays.get(0).unwrap();
 
     let display_data = display.borrow().data();
     println!("VRDisplay: {:?}", display_data);
+
+    loop {
+        let mut d = display.borrow_mut();
+        d.sync_poses();
+
+        println!("{:?}", d.synced_frame_data(0.1, 100.0).pose);
+    }
 }
