@@ -107,11 +107,14 @@ fn main() {
 
     // Main loop
     loop {
+        display.borrow_mut().sync_poses();
+
+        let gamepads = vrsm.get_gamepads();
+
         let mut d = display.borrow_mut();
-        d.sync_poses();
 
         // Draw frame
-        application.draw(&mut encoder, &*d, d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE), left_clip, right_clip);
+        application.draw(&mut encoder, &*d, gamepads, d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE), left_clip, right_clip);
         // Send instructions to OpenGL
         // TODO: Move flush to separate thread
         encoder.flush(&mut device);

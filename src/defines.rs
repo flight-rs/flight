@@ -6,6 +6,7 @@ use gfx::format::*;
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
 pub type DepthFormat = (D24, Unorm);
 pub type TargetRef<R> = gfx::handle::RenderTargetView<R, ColorFormat>;
+pub type DepthRef<R> = gfx::handle::DepthStencilView<R, DepthFormat>;
 
 // Define GFX rendering stuff and pipelines
 gfx_defines!{
