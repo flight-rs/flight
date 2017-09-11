@@ -22,7 +22,7 @@ use glutin::GlContext;
 
 fn main() {
     // logging setup
-    TermLogger::init(LogLevelFilter::Trace, Config::default()).unwrap();
+    TermLogger::init(LogLevelFilter::Info, Config::default()).unwrap();
 
     // check for mock
     let matches = App::new("VR")
@@ -41,9 +41,10 @@ fn main() {
     }
 
     let mut events_loop = glutin::EventsLoop::new();
-    let window_builder = glutin::WindowBuilder::new();
+    let window_builder = glutin::WindowBuilder::new()
+        .with_visibility(false);
     let context = glutin::ContextBuilder::new();
-    let (window, mut device, mut factory, rtv, stv) = 
+    let (window, mut device, mut factory, _, _) = 
         gfx_window_glutin::init::<Rgba8, DepthStencil>(window_builder, context, &events_loop);
 
     // Get the display
@@ -51,7 +52,7 @@ fn main() {
     let display = displays.get(0).unwrap();
 
     let display_data = display.borrow().data();
-    trace!("VRDisplay: {:?}", display_data);
+    info!("VR Device: {}", display_data.display_name);
 
     let render_width = display_data.left_eye_parameters.render_width as u16;
     let render_height = display_data.left_eye_parameters.render_height as u16;
@@ -77,8 +78,6 @@ fn main() {
         (Typed::new(raw), texture_id)
     };
 
-    info!("{}", texture_id);
-
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
 
     // Render to HMD
@@ -99,16 +98,13 @@ fn main() {
         let mut d = display.borrow_mut();
         d.sync_poses();
 
-        encoder.clear(&surface, [1.0, 0.0, 0.0, 1.0]);
-        encoder.clear(&rtv, [0.0, 0.0, 1.0, 1.0]);
+        encoder.clear(&surface, [0.529, 0.808, 0.980]);
         encoder.flush(&mut device);
 
         d.render_layer(&layer);
         d.submit_frame();
 
         window.swap_buffers().unwrap();
-
-        trace!("{:?}", d.synced_frame_data(0.1, 100.0).pose);
 
         // Window Events
         events_loop.poll_events(|event| {
