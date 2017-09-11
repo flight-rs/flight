@@ -1,30 +1,34 @@
 // Crates
 #[macro_use]
 extern crate log;
-
-extern crate rust_webvr;
+extern crate rust_webvr as webvr;
 extern crate clap;
 extern crate simplelog;
+#[macro_use]
 extern crate gfx;
 extern crate gfx_device_gl;
 extern crate gfx_window_glutin;
 extern crate glutin;
+extern crate cgmath;
 
 // Libraries
-use rust_webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
+use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
 use clap::{Arg, App};
-use gfx::{handle, Factory, texture, Encoder};
+use gfx::{handle, Factory, texture, Encoder, Device};
 use gfx::format::*;
 use gfx_device_gl::{NewTexture, Resources};
 use gfx::memory::Typed;
-use glutin::GlContext;
+
+mod shaders;
+mod app;
+mod defines;
 
 fn main() {
-    // logging setup
+    // Logging setup
     TermLogger::init(LogLevelFilter::Info, Config::default()).unwrap();
 
-    // check for mock
+    // Command line arguments
     let matches = App::new("VR")
         .arg(Arg::with_name("mock")
             .short("m")
@@ -32,7 +36,7 @@ fn main() {
             .help("Use mock VR API"))
         .get_matches();
 
-    // Init
+    // VR init
     let mut vrsm = VRServiceManager::new();
     if matches.is_present("mock") {
         vrsm.register_mock();
@@ -40,11 +44,13 @@ fn main() {
         vrsm.register_defaults();
     }
 
+    // Window manager stuff
     let mut events_loop = glutin::EventsLoop::new();
     let window_builder = glutin::WindowBuilder::new()
         .with_visibility(false);
     let context = glutin::ContextBuilder::new();
-    let (window, mut device, mut factory, _, _) = 
+    // Fuuny thing I found here: changing `_window` to `_` (ignoring it) makes everything explode because of early drop.
+    let (_window, mut device, mut factory, _, _) =
         gfx_window_glutin::init::<Rgba8, DepthStencil>(window_builder, context, &events_loop);
 
     // Get the display
@@ -54,13 +60,17 @@ fn main() {
     let display_data = display.borrow().data();
     info!("VR Device: {}", display_data.display_name);
 
+    // Get some frame sizeing information
     let render_width = display_data.left_eye_parameters.render_width as u16;
     let render_height = display_data.left_eye_parameters.render_height as u16;
+    let left_clip = gfx::Rect { x: 0, y: 0, w: render_width, h: render_height };
+    let right_clip = gfx::Rect { x: render_width, y: 0, w: render_width, h: render_height };
 
+    // Setup GFX utility stuff
     let mut manager = handle::Manager::new();
     let mut encoder: Encoder<Resources, _> = factory.create_command_buffer().into();
 
-    // create a texture
+    // Create texture to render to
     let (tex, texture_id) = {
         let desc = texture::Info {
             kind: texture::Kind::D2(render_width * 2, render_height, texture::AaMode::Single),
@@ -79,8 +89,9 @@ fn main() {
     };
 
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
+    let application = app::App::new(surface, &mut factory);
 
-    // Render to HMD
+    // HMD (head-mounted display) layer information
     let layer = VRLayer {
         texture_id: texture_id,
         .. Default::default()
@@ -94,22 +105,29 @@ fn main() {
     };
     display.borrow_mut().start_present(Some(attributes));
 
+    // Main loop
     loop {
         let mut d = display.borrow_mut();
         d.sync_poses();
 
-        encoder.clear(&surface, [0.529, 0.808, 0.980]);
+        // Draw frame
+        application.draw(&mut encoder, &*d, d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE), left_clip, right_clip);
+        // Send instructions to OpenGL
+        // TODO: Move flush to separate thread
         encoder.flush(&mut device);
 
+        // Send resulting texture to VR device
         d.render_layer(&layer);
         d.submit_frame();
 
-        window.swap_buffers().unwrap();
+        // Cleanup GFX data
+        device.cleanup();
 
         // Window Events
         events_loop.poll_events(|event| {
             match event {
                 // process events here
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => return,
                 _ => ()
             }
         });
