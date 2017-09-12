@@ -18,6 +18,7 @@ pub struct ObjectSource<V> {
     pub prim: Primitive,
 }
 
+#[derive(Clone)]
 pub struct Object<R: Resources, T: Vertex> {
     pub slice: Slice<R>,
     pub buf: Buffer<R, T>,

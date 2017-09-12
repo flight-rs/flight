@@ -12,7 +12,6 @@ extern crate glutin;
 extern crate cgmath;
 extern crate obj as wavefront;
 
-// Libraries
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
 use clap::{Arg, App};
@@ -57,8 +56,14 @@ fn main() {
         gfx_window_glutin::init::<Rgba8, DepthStencil>(window_builder, context, &events_loop);
 
     // Get the display
-    let displays = vrsm.get_displays();
-    let display = displays.get(0).unwrap();
+    let display = match vrsm.get_displays().get(0) {
+        Some(d) => d.clone(),
+        None => {
+            error!("No VR display present, exiting");
+            return
+        }
+    };
+    let gamepads = vrsm.get_gamepads();
 
     let display_data = display.borrow().data();
     info!("VR Device: {}", display_data.display_name);
@@ -92,7 +97,8 @@ fn main() {
     };
 
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
-    let application = app::App::new(surface, &mut factory);
+    let mut application = app::App::new(surface, &mut factory);
+    application.set_gamepads(gamepads.clone());
 
     // HMD (head-mounted display) layer information
     let layer = VRLayer {
@@ -109,22 +115,30 @@ fn main() {
     display.borrow_mut().start_present(Some(attributes));
 
     // Main loop
-    loop {
-        display.borrow_mut().sync_poses();
-
-        let gamepads = vrsm.get_gamepads();
-
-        let mut d = display.borrow_mut();
+    let mut running = true;
+    while running {
+        let data = {
+            let mut d = display.borrow_mut();
+            d.sync_poses();
+            app::DrawParams {
+                frame: d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE),
+                display: d.data(),
+                clip: (left_clip, right_clip),
+            }
+        };
 
         // Draw frame
-        application.draw(&mut encoder, &*d, gamepads, d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE), left_clip, right_clip);
+        application.draw(&mut encoder, data);
         // Send instructions to OpenGL
         // TODO: Move flush to separate thread
         encoder.flush(&mut device);
 
         // Send resulting texture to VR device
-        d.render_layer(&layer);
-        d.submit_frame();
+        {
+            let mut d = display.borrow_mut();
+            d.render_layer(&layer);
+            d.submit_frame();
+        }
 
         // Cleanup GFX data
         device.cleanup();
@@ -133,9 +147,12 @@ fn main() {
         events_loop.poll_events(|event| {
             match event {
                 // process events here
-                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => return,
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => 
+                    running = false,
                 _ => ()
             }
         });
     }
+
+    display.borrow_mut().stop_present();
 }

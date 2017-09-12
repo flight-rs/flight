@@ -2,7 +2,7 @@ use std::path::Path;
 use gfx::{self, Factory, Encoder, Rect, PipelineState};
 use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
-use webvr::{VRDisplay, VRFrameData, VRPose, VRGamepadPtr};
+use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
 use defines::*;
 use shaders;
 use cgmath::prelude::*;
@@ -13,7 +13,14 @@ use load::*;
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
 
+pub struct DrawParams {
+    pub display: VRDisplayData,
+    pub frame: VRFrameData,
+    pub clip: (Rect, Rect),
+}
+
 pub struct App<R: gfx::Resources> {
+    gamepads: Vec<VRGamepadPtr>,
     color: TargetRef<R>,
     depth: DepthRef<R>,
     transform: Buffer<R, TransformBlock>,
@@ -99,6 +106,7 @@ impl<R: gfx::Resources> App<R> {
 
         // Construct App
         App {
+            gamepads: vec![],
             color: target,
             depth: depth,
             transform: factory.create_constant_buffer(1),
@@ -113,9 +121,13 @@ impl<R: gfx::Resources> App<R> {
         }
     }
 
-    pub fn draw<C: gfx::CommandBuffer<R>>(&self, enc: &mut Encoder<R, C>, display: &VRDisplay, gamepads: Vec<VRGamepadPtr>, vr_frame: VRFrameData, left_clip: Rect, right_clip: Rect) {
+    pub fn set_gamepads(&mut self, g: Vec<VRGamepadPtr>) {
+        self.gamepads = g;
+    }
+
+    pub fn draw<C: gfx::CommandBuffer<R>>(&self, enc: &mut Encoder<R, C>, data: DrawParams) {
         // Get stage transform thing
-        let stage = if let Some(ref stage) = display.data().stage_parameters {
+        let stage = if let Some(ref stage) = data.display.stage_parameters {
             matrix_from(&stage.sitting_to_standing_transform).inverse_transform().unwrap()
         } else {
             Matrix4::identity()
@@ -127,7 +139,7 @@ impl<R: gfx::Resources> App<R> {
 
         // Setup frame
         let mut frame = DrawFrame {
-            controllers: gamepads.into_iter().filter_map(|g| Controller::from_gp(g)).collect(),
+            controllers: self.gamepads.iter().filter_map(|g| Controller::from_gp(g)).collect(),
             app: self,
             encoder: enc,
             stage: stage,
@@ -135,15 +147,15 @@ impl<R: gfx::Resources> App<R> {
 
         // Render left eye
         frame.draw(
-            *matrix_from(&vr_frame.left_view_matrix),
-            *matrix_from(&vr_frame.left_projection_matrix),
-            left_clip,
+            *matrix_from(&data.frame.left_view_matrix),
+            *matrix_from(&data.frame.left_projection_matrix),
+            data.clip.0,
             -0.5);
         // Render right eye
         frame.draw(
-            *matrix_from(&vr_frame.right_view_matrix),
-            *matrix_from(&vr_frame.right_projection_matrix),
-            right_clip,
+            *matrix_from(&data.frame.right_view_matrix),
+            *matrix_from(&data.frame.right_projection_matrix),
+            data.clip.1,
             0.5);
     }
 }
@@ -153,7 +165,7 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn from_gp(gp: VRGamepadPtr) -> Option<Self> {
+    pub fn from_gp(gp: &VRGamepadPtr) -> Option<Self> {
         let gp = gp.borrow();
         let state = gp.state();
         Some(Controller {
