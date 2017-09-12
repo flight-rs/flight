@@ -10,6 +10,7 @@ extern crate gfx_device_gl;
 extern crate gfx_window_glutin;
 extern crate glutin;
 extern crate cgmath;
+extern crate obj as wavefront;
 
 // Libraries
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
@@ -23,6 +24,8 @@ use gfx::memory::Typed;
 mod shaders;
 mod app;
 mod defines;
+mod object;
+mod load;
 
 fn main() {
     // Logging setup

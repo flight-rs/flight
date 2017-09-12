@@ -1,23 +1,28 @@
-use gfx::{self, Factory, Encoder, Rect, PipelineState, Slice};
+use std::path::Path;
+use gfx::{self, Factory, Encoder, Rect, PipelineState};
 use gfx::traits::FactoryExt;
+use gfx::handle::Buffer;
 use webvr::{VRDisplay, VRFrameData, VRPose, VRGamepadPtr};
 use defines::*;
 use shaders;
 use cgmath::prelude::*;
 use cgmath::*;
+use object::*;
+use load::*;
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
 
 pub struct App<R: gfx::Resources> {
-    target: TargetRef<R>,
-    depth_target: DepthRef<R>,
-    grid_pso: PipelineState<R, simple::Meta>,
-    grid_slice: Slice<R>,
-    grid_data: simple::Data<R>,
-    controller_pso: PipelineState<R, simple::Meta>,
-    controller_slice: Slice<R>,
-    controller_data: simple::Data<R>,
+    color: TargetRef<R>,
+    depth: DepthRef<R>,
+    transform: Buffer<R, TransformBlock>,
+    unishade: Buffer<R, UnishadeBlock>,
+    solid_lines_pso: PipelineState<R, solid::Meta>,
+    unishade_tris_pso: PipelineState<R, unishade::Meta>,
+    grid: Object<R, VertC>,
+    controller_grid: Object<R, VertC>,
+    controller: Object<R, VertN>,
 }
 
 pub fn matrix_from(mat: &[f32; 16]) -> &Matrix4<f32> {
@@ -35,7 +40,7 @@ pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
     }))
 }
 
-fn grid_lines(count: u32, size: f32) -> Vec<Vert> {
+fn grid_lines(count: u32, size: f32) -> ObjectSource<VertC> {
     let mut lines = Vec::new();
     let base_color = [0.2, 0.2, 0.2];
     let light_color = [0.8, 0.8, 0.8];
@@ -51,88 +56,60 @@ fn grid_lines(count: u32, size: f32) -> Vec<Vert> {
             } else if a % 2 == 0 && b % 2 == 0 { [base_color; 3] } else { [light_color; 3] };
             let a = a as f32 * mult - rad;
             let b = b as f32 * mult - rad;
-            lines.push(Vert { a_pos: [-rad, a, b], a_color: line_color[0] });
-            lines.push(Vert { a_pos: [rad, a, b], a_color: line_color[0] });
-            lines.push(Vert { a_pos: [a, -rad, b], a_color: line_color[1] });
-            lines.push(Vert { a_pos: [a, rad, b], a_color: line_color[1] });
-            lines.push(Vert { a_pos: [a, b, -rad], a_color: line_color[2] });
-            lines.push(Vert { a_pos: [a, b, rad], a_color: line_color[2] });
+            lines.push(VertC { pos: [-rad, a, b], color: line_color[0] });
+            lines.push(VertC { pos: [rad, a, b], color: line_color[0] });
+            lines.push(VertC { pos: [a, -rad, b], color: line_color[1] });
+            lines.push(VertC { pos: [a, rad, b], color: line_color[1] });
+            lines.push(VertC { pos: [a, b, -rad], color: line_color[2] });
+            lines.push(VertC { pos: [a, b, rad], color: line_color[2] });
         }
     }
-    lines
+    ObjectSource {
+        verts: lines,
+        inds: Indexing::All,
+        prim: Primitive::LineList,
+    }
 }
 
 impl<R: gfx::Resources> App<R> {
     pub fn new<F: Factory<R> + FactoryExt<R>>(target: TargetRef<R>, factory: &mut F) -> Self {
-        // Load simple shader (shaders/transform.v.glsl + shaders/simple.f.glsl)
-        let simple_shader = shaders::simple(factory).unwrap();
+        // Load solid shader (shaders/transform.v.glsl + shaders/simple.f.glsl)
+        let solid_shader = shaders::simple(factory).unwrap();
 
-        // Setup lines pipline state object
-        let grid_pso = {
-            let shaders = simple_shader.clone();
-            factory.create_pipeline_state(
-                &shaders,
-                gfx::Primitive::LineList,
-                gfx::state::Rasterizer::new_fill(),
-                simple::new()
-            ).unwrap()
-        };
+        // Load unishade shader (shaders/transform.v.glsl + shaders/unishade.f.glsl)
+        let unishade_shader = shaders::unishade(factory).unwrap();
 
-        // Setup controller pipline state object
-        let controller_pso = {
-            let shaders = simple_shader.clone();
-            factory.create_pipeline_state(
-                &shaders,
-                gfx::Primitive::LineList,
-                gfx::state::Rasterizer::new_fill(),
-                simple::new()
-            ).unwrap()
-        };
+        // Setup pipline state objects
+        let solid_lines_pso = factory.create_pipeline_state(
+            &solid_shader,
+            Primitive::LineList,
+            gfx::state::Rasterizer::new_fill(),
+            solid::new()
+        ).unwrap();
+        let unishade_tris_pso = factory.create_pipeline_state(
+            &unishade_shader,
+            Primitive::TriangleList,
+            gfx::state::Rasterizer::new_fill(),
+            unishade::new()
+        ).unwrap();
 
         // Create depth buffer
         let (w, h, ..) = target.get_dimensions();
-        let (.., depth_target) = factory.create_depth_stencil(w, h).unwrap();
-
-        // Create grid vertex buffer
-        let grid = grid_lines(8, 10.);
-        let grid_buf = factory.create_vertex_buffer(&grid);
-        let grid_slice = Slice::new_match_vertex_buffer(&grid_buf);
-
-        // controller vertex buffer
-        let controller = grid_lines(2, 0.2);
-        let controller_buf = factory.create_vertex_buffer(&controller);
-        let controller_slice = Slice::new_match_vertex_buffer(&controller_buf);
-
-        let transform_buf = factory.create_constant_buffer(1);
-
-        // Setup data for lines pipeline
-        let grid_data = simple::Data {
-            verts: grid_buf,
-            color: target.clone(),
-            depth: depth_target.clone(),
-            scissor: Rect { x: 0, y: 0, w: 0, h: 0 },
-            transform: transform_buf.clone(),
-        };
-
-        // Setup data for controller pipeline
-        let controller_data = simple::Data {
-            verts: controller_buf,
-            color: target.clone(),
-            depth: depth_target.clone(),
-            scissor: Rect { x: 0, y: 0, w: 0, h: 0 },
-            transform: transform_buf.clone(),
-        };
+        let (.., depth) = factory.create_depth_stencil(w, h).unwrap();
 
         // Construct App
         App {
-            target: target,
-            depth_target: depth_target,
-            grid_slice: grid_slice,
-            grid_pso: grid_pso,
-            grid_data: grid_data,
-            controller_slice: controller_slice,
-            controller_pso: controller_pso,
-            controller_data: controller_data,
+            color: target,
+            depth: depth,
+            transform: factory.create_constant_buffer(1),
+            unishade: factory.create_constant_buffer(1),
+            solid_lines_pso: solid_lines_pso,
+            unishade_tris_pso: unishade_tris_pso,
+            grid: grid_lines(8, 10.).build(factory),
+            controller_grid: grid_lines(2, 0.2).build(factory),
+            controller: load_wavefront(
+                &::wavefront::Obj::load(&Path::new("controller.obj")).unwrap()
+            ).build(factory),
         }
     }
 
@@ -145,8 +122,8 @@ impl<R: gfx::Resources> App<R> {
         };
 
         // Clear targets
-        enc.clear_depth(&self.depth_target, FAR_PLANE as f32);
-        enc.clear(&self.target, [0.529, 0.808, 0.980, 1.0]);
+        enc.clear_depth(&self.depth, FAR_PLANE as f32);
+        enc.clear(&self.color, [0.529, 0.808, 0.980, 1.0]);
 
         // Setup frame
         let mut frame = DrawFrame {
@@ -194,23 +171,50 @@ pub struct DrawFrame<'a, R: gfx::Resources, C: gfx::CommandBuffer<R> + 'a> {
 
 impl<'a, R: gfx::Resources, C: gfx::CommandBuffer<R>> DrawFrame<'a, R, C> {
     pub fn draw(&mut self, view: Matrix4<f32>, proj: Matrix4<f32>, scissor: Rect, offset: f32) {
-        self.encoder.update_constant_buffer(&self.app.grid_data.transform, &TransformBlock {
+        let mut solid_data = solid::Data { 
+            verts: self.app.grid.buf.clone(),
+            color: self.app.color.clone(),
+            depth: self.app.depth.clone(),
+            scissor: scissor, 
+            transform: self.app.transform.clone(),
+        };
+
+        self.encoder.update_constant_buffer(&self.app.transform, &TransformBlock {
             model: self.stage.into(),
             view: view.into(),
             proj: proj.into(),
             xoffset: offset,
         });
-        self.encoder.draw(&self.app.grid_slice, &self.app.grid_pso, &simple::Data { scissor: scissor, .. self.app.grid_data.clone() });
+        self.encoder.draw(&self.app.grid.slice, &self.app.solid_lines_pso, &solid_data);
 
-        let cont_data = simple::Data { scissor: scissor, .. self.app.controller_data.clone() };
+        solid_data.verts = self.app.controller_grid.buf.clone();
+        let unishade_data = unishade::Data { 
+            verts: self.app.controller.buf.clone(),
+            color: self.app.color.clone(),
+            depth: self.app.depth.clone(),
+            scissor: scissor, 
+            transform: self.app.transform.clone(),
+            shade: self.app.unishade.clone(),
+        };
+        self.encoder.update_constant_buffer(&self.app.unishade, &UnishadeBlock {
+            light:  [0.467, 0.533, 0.600, 1.0],
+            dark: [0.184, 0.310, 0.310, 1.0],
+        });
         for cont in &self.controllers {
-            self.encoder.update_constant_buffer(&self.app.controller_data.transform, &TransformBlock {
+            self.encoder.update_constant_buffer(&self.app.transform, &TransformBlock {
                 model: cont.pose.into(),
                 view: view.into(),
                 proj: proj.into(),
                 xoffset: offset,
             });
-            self.encoder.draw(&self.app.controller_slice, &self.app.controller_pso, &cont_data);
+            self.encoder.draw(
+                &self.app.controller_grid.slice,
+                &self.app.solid_lines_pso,
+                &solid_data);
+            self.encoder.draw(
+                &self.app.controller.slice,
+                &self.app.unishade_tris_pso,
+                &unishade_data);
         }
     }
 }
