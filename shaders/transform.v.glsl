@@ -30,7 +30,7 @@ void main() {
     v_pos = p.xyz;
 
     #ifdef NORM
-    v_norm = (model * vec4(a_nor, 0)).xyz;
+    v_norm = (model * vec4(a_norm, 0)).xyz;
     #endif
 
     #ifdef TEX

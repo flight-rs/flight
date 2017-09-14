@@ -9,6 +9,7 @@ dependencies = [
  "gfx_window_glutin 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "obj 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-webvr 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "simplelog 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -436,6 +437,11 @@ version = "0.1.40"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "obj"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "objc"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -851,6 +857,7 @@ dependencies = [
 "checksum malloc_buf 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)" = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
 "checksum memmap 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "69253224aa10070855ea8fe9dbe94a03fc2b1d7930bb340c9e586a7513716fea"
 "checksum num-traits 0.1.40 (registry+https://github.com/rust-lang/crates.io-index)" = "99843c856d68d8b4313b03a17e33c4bb42ae8f6610ea81b28abe076ac721b9b0"
+"checksum obj 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b8c9ab3ef9d0fc5b0b73eea591105d916dd1c270f7969b4bd69e53a62ac84970"
 "checksum objc 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "877f30f37acef6749b1841cceab289707f211aecfc756553cd63976190e6cc2e"
 "checksum osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "88cfece6e95d2e717e0872a7f53a8684712ad13822a7979bc760b9c77ec0013b"
 "checksum phf 0.7.21 (registry+https://github.com/rust-lang/crates.io-index)" = "cb325642290f28ee14d8c6201159949a872f220c62af6e110a56ea914fbe42fc"
