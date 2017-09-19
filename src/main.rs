@@ -11,6 +11,7 @@ extern crate gfx_window_glutin;
 extern crate glutin;
 extern crate cgmath;
 extern crate obj as wavefront;
+extern crate fnv;
 
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
@@ -25,6 +26,7 @@ mod app;
 mod defines;
 mod object;
 mod load;
+mod style;
 
 fn main() {
     // Logging setup

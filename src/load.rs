@@ -1,6 +1,7 @@
 use wavefront::*;
-use object::{ObjectSource, Indexing, Primitive};
+use object::{ObjectSource, Indexing};
 use defines::VertN;
+use gfx::Primitive;
 use std::collections::HashMap;
 
 

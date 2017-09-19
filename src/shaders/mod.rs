@@ -6,7 +6,9 @@ mod util;
 use gfx;
 use self::util::file;
 
-pub const LIGHT_COUNT: usize = 2;
+use gfx::ShaderSet;
+use gfx::shade::core::CreateShaderError;
+pub type ShaderResult<R> = Result<ShaderSet<R>, CreateShaderError>;
 
 // Setup shaders
 shader!(simple {

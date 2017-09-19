@@ -1,5 +1,5 @@
 use std::path::Path;
-use gfx::{self, Factory, Encoder, Rect, PipelineState};
+use gfx::{self, Factory, Encoder, Rect, PipelineState, Primitive};
 use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
 use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
