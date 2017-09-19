@@ -17,35 +17,42 @@ pub use self::unishade::*;
 
 #[derive(Copy, Clone)]
 pub struct EyeContext {
-    view: Matrix4<f32>,
-    proj: Matrix4<f32>,
-    xoffset: f32,
-    clip: Rect,
+    pub view: Matrix4<f32>,
+    pub proj: Matrix4<f32>,
+    pub xoffset: f32,
+    pub clip: Rect,
 }
 
 pub struct DrawContext<R: Resources, C: CommandBuffer<R>> {
-    encoder: Encoder<R, C>,
-    color: TargetRef<R>,
-    depth: DepthRef<R>,
-    left: EyeContext,
-    right: EyeContext,
+    pub encoder: Encoder<R, C>,
+    pub color: TargetRef<R>,
+    pub depth: DepthRef<R>,
+    pub left: EyeContext,
+    pub right: EyeContext,
 }
 
-pub struct StyleGroup<R: Resources, E: Style<R>> {
+pub struct Styler<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
     map: FnvHashMap<Primitive, E>,
 }
 
-impl<R: Resources, E: Style<R>> StyleGroup<R, E> {
-    fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> StyleGroup<R, E> {
-        StyleGroup {
+impl<R: Resources, E: Style<R>> Styler<R, E> {
+    pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Styler<R, E> {
+        Styler {
             inputs: RefCell::new(E::init(f)),
             map: Default::default(),
         }
     }
 
-    fn draw<C>(
-        &mut self,
+    pub fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) {
+        let mut inputs = self.inputs.borrow_mut();
+        self.map.entry(prim).or_insert_with(move ||
+            E::new(f, &mut *inputs, prim, Rasterizer::new_fill())
+        );
+    }
+
+    pub fn draw<C>(
+        &self,
         ctx: &mut DrawContext<R, C>,
         model: Matrix4<f32>,
         obj: &Object<R, E::Vertex>,
@@ -72,8 +79,8 @@ impl<R: Resources, E: Style<R>> StyleGroup<R, E> {
             );
 
             trans.view = ctx.right.view.into();
-            trans.proj = ctx.left.proj.into();
-            trans.xoffset = ctx.left.xoffset;
+            trans.proj = ctx.right.proj.into();
+            trans.xoffset = ctx.right.xoffset;
             ctx.encoder.update_constant_buffer(inputs.transform_buffer(), &trans);
             sty.draw_raw(
                 &mut *inputs,
@@ -89,11 +96,8 @@ impl<R: Resources, E: Style<R>> StyleGroup<R, E> {
         }
     }
 
-    fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) {
-        let mut inputs = self.inputs.borrow_mut();
-        self.map.entry(prim).or_insert_with(move ||
-            E::new(f, &mut *inputs, prim, Rasterizer::new_fill())
-        );
+    pub fn cfg<F: FnOnce(&mut E::Inputs)>(&self, f: F) { 
+        f(&mut *self.inputs.borrow_mut())
     }
 }
 

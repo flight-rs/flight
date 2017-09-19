@@ -16,6 +16,15 @@ pub struct UnishadeInputs<R: Resources> {
     shade_block: Buffer<R, UnishadeBlock>,
 }
 
+impl<R: Resources> UnishadeInputs<R> {
+    pub fn colors(&mut self, dark: [f32; 4], light: [f32; 4]) {
+        self.shade = Some(UnishadeBlock {
+            dark: dark,
+            light: light,
+        })
+    }
+}
+
 impl<R: Resources> StyleInputs<R> for UnishadeInputs<R> {
     fn transform_buffer(&self) -> &Buffer<R, TransformBlock> { &self.transform }
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }

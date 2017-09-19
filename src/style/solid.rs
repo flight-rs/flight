@@ -42,7 +42,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         f: &mut F,
     ) -> SolidInputs<R> {
         SolidInputs {
-            shaders: shaders::unishade(f).unwrap(),
+            shaders: shaders::simple(f).unwrap(),
             transform: f.create_constant_buffer(1),
         }
     }

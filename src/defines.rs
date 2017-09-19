@@ -4,7 +4,7 @@ use gfx::{self, traits, handle, pso};
 use gfx::format::*;
 
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
-pub type DepthFormat = (D24, Unorm);
+pub type DepthFormat = (D24_S8, Unorm);
 pub type TargetRef<R> = handle::RenderTargetView<R, ColorFormat>;
 pub type DepthRef<R> = handle::DepthStencilView<R, DepthFormat>;
 

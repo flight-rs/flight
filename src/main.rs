@@ -16,10 +16,13 @@ extern crate fnv;
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
 use clap::{Arg, App};
-use gfx::{handle, Factory, texture, Encoder, Device};
+use gfx::{handle, Factory, texture, Device};
 use gfx::format::*;
-use gfx_device_gl::{NewTexture, Resources};
+use gfx_device_gl::{NewTexture};
 use gfx::memory::Typed;
+use glutin::GlContext;
+use cgmath::prelude::*;
+use cgmath::Matrix4;
 
 mod shaders;
 mod app;
@@ -39,23 +42,15 @@ fn main() {
             .long("mock")
             .help("Use mock VR API"))
         .get_matches();
-
+    let mock = matches.is_present("mock");
+    
     // VR init
     let mut vrsm = VRServiceManager::new();
-    if matches.is_present("mock") {
+    if mock {
         vrsm.register_mock();
     } else {
         vrsm.register_defaults();
     }
-
-    // Window manager stuff
-    let mut events_loop = glutin::EventsLoop::new();
-    let window_builder = glutin::WindowBuilder::new()
-        .with_visibility(false);
-    let context = glutin::ContextBuilder::new();
-    // Fuuny thing I found here: changing `_window` to `_` (ignoring it) makes everything explode because of early drop.
-    let (_window, mut device, mut factory, _, _) =
-        gfx_window_glutin::init::<Rgba8, DepthStencil>(window_builder, context, &events_loop);
 
     // Get the display
     let display = match vrsm.get_displays().get(0) {
@@ -76,9 +71,16 @@ fn main() {
     let left_clip = gfx::Rect { x: 0, y: 0, w: render_width, h: render_height };
     let right_clip = gfx::Rect { x: render_width, y: 0, w: render_width, h: render_height };
 
-    // Setup GFX utility stuff
-    let mut manager = handle::Manager::new();
-    let mut encoder: Encoder<Resources, _> = factory.create_command_buffer().into();
+    // Window manager stuff
+    let mut events_loop = glutin::EventsLoop::new();
+    let window_builder = glutin::WindowBuilder::new()
+        .with_visibility(mock)
+        .with_dimensions(render_width as u32, render_height as u32)
+        .with_title("Mock OpenVR Display");
+    let context = glutin::ContextBuilder::new();
+    // Fuuny thing I found here: changing `_window` to `_` (ignoring it) makes everything explode because of early drop.
+    let (window, mut device, mut factory, wcolor, wdepth) =
+        gfx_window_glutin::init::<Rgba8, DepthStencil>(window_builder, context, &events_loop);
 
     // Create texture to render to
     let (tex, texture_id) = {
@@ -91,6 +93,7 @@ fn main() {
         };
 
         let raw = factory.create_texture_raw(desc, Some(ChannelType::Unorm), None).unwrap();
+        let mut manager = handle::Manager::new();
         let texture_id = match *manager.ref_texture(&raw) {
             NewTexture::Texture(t) => t as u32,
             _ => panic!("Something went wrong here"),
@@ -98,8 +101,11 @@ fn main() {
         (Typed::new(raw), texture_id)
     };
 
+    // Create depth buffer
+    let (.., depth) = factory.create_depth_stencil(render_width * 2, render_height).unwrap();
+
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
-    let mut application = app::App::new(surface, &mut factory);
+    let mut application = app::App::new(&mut factory);
     application.set_gamepads(gamepads.clone());
 
     // HMD (head-mounted display) layer information
@@ -116,24 +122,54 @@ fn main() {
     };
     display.borrow_mut().start_present(Some(attributes));
 
+
+    // setup context
+    let mut ctx = style::DrawContext {
+        encoder: factory.create_command_buffer().into(),
+        color: if mock { wcolor } else { surface },
+        depth: if mock { wdepth } else { depth },
+        left: style::EyeContext {
+            view: Matrix4::identity(),
+            proj: Matrix4::identity(),
+            xoffset: -0.5,
+            clip: left_clip,
+        },
+        right: style::EyeContext {
+            view: Matrix4::identity(),
+            proj: Matrix4::identity(),
+            xoffset: 0.5,
+            clip: right_clip,
+        },
+    };
+
     // Main loop
     let mut running = true;
     while running {
-        let data = {
+        let (data, frame) = {
             let mut d = display.borrow_mut();
             d.sync_poses();
-            app::DrawParams {
-                frame: d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE),
-                display: d.data(),
-                clip: (left_clip, right_clip),
-            }
+            (d.data(), d.synced_frame_data(app::NEAR_PLANE, app::FAR_PLANE))
         };
 
+        // Update context
+        ctx.left.view.clone_from((&frame.left_view_matrix).into());
+        ctx.left.proj.clone_from((&frame.left_projection_matrix).into());
+        ctx.right.view.clone_from((&frame.right_view_matrix).into());
+        ctx.right.proj.clone_from((&frame.right_projection_matrix).into());
+
+        // Update clipping if mock
+        if mock {
+            let (w, h, ..) = ctx.color.get_dimensions();
+            ctx.left.clip = gfx::Rect { x: 0, y: 0, w: w / 2, h: h };
+            ctx.right.clip = gfx::Rect { x: w / 2, y: 0, w: w / 2, h: h };
+        }
+
         // Draw frame
-        application.draw(&mut encoder, data);
+        application.draw(&mut ctx, &data, &frame);
+
         // Send instructions to OpenGL
         // TODO: Move flush to separate thread
-        encoder.flush(&mut device);
+        ctx.encoder.flush(&mut device);
 
         // Send resulting texture to VR device
         {
@@ -141,6 +177,7 @@ fn main() {
             d.render_layer(&layer);
             d.submit_frame();
         }
+        if mock { window.swap_buffers().unwrap() }
 
         // Cleanup GFX data
         device.cleanup();

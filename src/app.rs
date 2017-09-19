@@ -1,39 +1,24 @@
 use std::path::Path;
-use gfx::{self, Factory, Encoder, Rect, PipelineState, Primitive};
+use gfx::{self, Factory, Primitive};
 use gfx::traits::FactoryExt;
-use gfx::handle::Buffer;
 use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
-use defines::*;
-use shaders;
 use cgmath::prelude::*;
 use cgmath::*;
 use object::*;
 use load::*;
+use style::*;
+use defines::*;
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
 
-pub struct DrawParams {
-    pub display: VRDisplayData,
-    pub frame: VRFrameData,
-    pub clip: (Rect, Rect),
-}
-
 pub struct App<R: gfx::Resources> {
     gamepads: Vec<VRGamepadPtr>,
-    color: TargetRef<R>,
-    depth: DepthRef<R>,
-    transform: Buffer<R, TransformBlock>,
-    unishade: Buffer<R, UnishadeBlock>,
-    solid_lines_pso: PipelineState<R, solid::Meta>,
-    unishade_tris_pso: PipelineState<R, unishade::Meta>,
+    solid: Styler<R, SolidStyle<R>>,
+    unishade: Styler<R, UnishadeStyle<R>>,
     grid: Object<R, VertC>,
     controller_grid: Object<R, VertC>,
     controller: Object<R, VertN>,
-}
-
-pub fn matrix_from(mat: &[f32; 16]) -> &Matrix4<f32> {
-    <&Matrix4<f32>>::from(mat)
 }
 
 pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
@@ -79,40 +64,22 @@ fn grid_lines(count: u32, size: f32) -> ObjectSource<VertC> {
 }
 
 impl<R: gfx::Resources> App<R> {
-    pub fn new<F: Factory<R> + FactoryExt<R>>(target: TargetRef<R>, factory: &mut F) -> Self {
-        // Load solid shader (shaders/transform.v.glsl + shaders/simple.f.glsl)
-        let solid_shader = shaders::simple(factory).unwrap();
+    pub fn new<F: Factory<R> + FactoryExt<R>>(factory: &mut F) -> Self {
+        // Setup stylers
+        let mut solid = Styler::new(factory);
+        solid.setup(factory, Primitive::LineList);
+        solid.setup(factory, Primitive::TriangleList);
 
-        // Load unishade shader (shaders/transform.v.glsl + shaders/unishade.f.glsl)
-        let unishade_shader = shaders::unishade(factory).unwrap();
-
-        // Setup pipline state objects
-        let solid_lines_pso = factory.create_pipeline_state(
-            &solid_shader,
-            Primitive::LineList,
-            gfx::state::Rasterizer::new_fill(),
-            solid::new()
-        ).unwrap();
-        let unishade_tris_pso = factory.create_pipeline_state(
-            &unishade_shader,
-            Primitive::TriangleList,
-            gfx::state::Rasterizer::new_fill(),
-            unishade::new()
-        ).unwrap();
-
-        // Create depth buffer
-        let (w, h, ..) = target.get_dimensions();
-        let (.., depth) = factory.create_depth_stencil(w, h).unwrap();
+        let mut unishade: Styler<_, UnishadeStyle<_>> = Styler::new(factory);
+        unishade.setup(factory, Primitive::LineList);
+        unishade.setup(factory, Primitive::TriangleList);
+        unishade.cfg(|s| s.colors([0.184, 0.310, 0.310, 1.0], [0.467, 0.533, 0.600, 1.0]));
 
         // Construct App
         App {
             gamepads: vec![],
-            color: target,
-            depth: depth,
-            transform: factory.create_constant_buffer(1),
-            unishade: factory.create_constant_buffer(1),
-            solid_lines_pso: solid_lines_pso,
-            unishade_tris_pso: unishade_tris_pso,
+            solid: solid,
+            unishade: unishade,
             grid: grid_lines(8, 10.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
             controller: load_wavefront(
@@ -125,38 +92,39 @@ impl<R: gfx::Resources> App<R> {
         self.gamepads = g;
     }
 
-    pub fn draw<C: gfx::CommandBuffer<R>>(&self, enc: &mut Encoder<R, C>, data: DrawParams) {
+    pub fn draw<C: gfx::CommandBuffer<R>>(
+        &self,
+        ctx: &mut DrawContext<R, C>,
+        display: &VRDisplayData,
+        frame: &VRFrameData,
+    ) {
         // Get stage transform thing
-        let stage = if let Some(ref stage) = data.display.stage_parameters {
-            matrix_from(&stage.sitting_to_standing_transform).inverse_transform().unwrap()
+        let stage = if let Some(ref stage) = display.stage_parameters {
+            <&Matrix4<f32>>::from(&stage.sitting_to_standing_transform).inverse_transform().unwrap()
         } else {
             Matrix4::identity()
         };
 
         // Clear targets
-        enc.clear_depth(&self.depth, FAR_PLANE as f32);
-        enc.clear(&self.color, [0.529, 0.808, 0.980, 1.0]);
+        ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
+        ctx.encoder.clear(&ctx.color, [0.529, 0.808, 0.980, 1.0]);
 
-        // Setup frame
-        let mut frame = DrawFrame {
-            controllers: self.gamepads.iter().filter_map(|g| Controller::from_gp(g)).collect(),
-            app: self,
-            encoder: enc,
-            stage: stage,
-        };
+        // Draw grid
+        self.solid.draw(ctx, stage, &self.grid);
 
-        // Render left eye
-        frame.draw(
-            *matrix_from(&data.frame.left_view_matrix),
-            *matrix_from(&data.frame.left_projection_matrix),
-            data.clip.0,
-            -0.5);
-        // Render right eye
-        frame.draw(
-            *matrix_from(&data.frame.right_view_matrix),
-            *matrix_from(&data.frame.right_projection_matrix),
-            data.clip.1,
-            0.5);
+        // Draw a controller out in the middle of nowhere so we can test stuff
+        self.unishade.draw(ctx, Matrix4::from(Decomposed {
+            scale: 10.,
+            rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),
+            disp: Vector3::new(-2., -2., -4.5),
+        }), &self.controller);
+
+        // Draw controllers
+        let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g));
+        for cont in controllers {
+            self.solid.draw(ctx, cont.pose, &self.controller_grid);
+            self.unishade.draw(ctx, cont.pose, &self.controller);
+        }
     }
 }
 
@@ -171,62 +139,5 @@ impl Controller {
         Some(Controller {
             pose: match pose_transform(&state.pose) { Some(p) => p, None => return None },
         })
-    }
-}
-
-pub struct DrawFrame<'a, R: gfx::Resources, C: gfx::CommandBuffer<R> + 'a> {
-    app: &'a App<R>,
-    encoder: &'a mut Encoder<R, C>,
-    controllers: Vec<Controller>,
-    stage: Matrix4<f32>,
-}
-
-impl<'a, R: gfx::Resources, C: gfx::CommandBuffer<R>> DrawFrame<'a, R, C> {
-    pub fn draw(&mut self, view: Matrix4<f32>, proj: Matrix4<f32>, scissor: Rect, offset: f32) {
-        let mut solid_data = solid::Data { 
-            verts: self.app.grid.buf.clone(),
-            color: self.app.color.clone(),
-            depth: self.app.depth.clone(),
-            scissor: scissor, 
-            transform: self.app.transform.clone(),
-        };
-
-        self.encoder.update_constant_buffer(&self.app.transform, &TransformBlock {
-            model: self.stage.into(),
-            view: view.into(),
-            proj: proj.into(),
-            xoffset: offset,
-        });
-        self.encoder.draw(&self.app.grid.slice, &self.app.solid_lines_pso, &solid_data);
-
-        solid_data.verts = self.app.controller_grid.buf.clone();
-        let unishade_data = unishade::Data { 
-            verts: self.app.controller.buf.clone(),
-            color: self.app.color.clone(),
-            depth: self.app.depth.clone(),
-            scissor: scissor, 
-            transform: self.app.transform.clone(),
-            shade: self.app.unishade.clone(),
-        };
-        self.encoder.update_constant_buffer(&self.app.unishade, &UnishadeBlock {
-            light:  [0.467, 0.533, 0.600, 1.0],
-            dark: [0.184, 0.310, 0.310, 1.0],
-        });
-        for cont in &self.controllers {
-            self.encoder.update_constant_buffer(&self.app.transform, &TransformBlock {
-                model: cont.pose.into(),
-                view: view.into(),
-                proj: proj.into(),
-                xoffset: offset,
-            });
-            self.encoder.draw(
-                &self.app.controller_grid.slice,
-                &self.app.solid_lines_pso,
-                &solid_data);
-            self.encoder.draw(
-                &self.app.controller.slice,
-                &self.app.unishade_tris_pso,
-                &unishade_data);
-        }
     }
 }
