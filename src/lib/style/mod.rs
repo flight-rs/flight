@@ -6,30 +6,18 @@ use cgmath::Matrix4;
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
-use object::Object;
-use defines::{TargetRef, DepthRef, TransformBlock, Vertex};
+use lib::{TransformBlock, DepthRef, TargetRef};
+use lib::context::*;
+use lib::mesh::{Mesh, Vertex};
+
+#[macro_use]
+mod shaders;
 
 mod solid;
-pub use self::solid::*;
+pub use self::solid::{SolidStyle};
 
 mod unishade;
-pub use self::unishade::*;
-
-#[derive(Copy, Clone)]
-pub struct EyeContext {
-    pub view: Matrix4<f32>,
-    pub proj: Matrix4<f32>,
-    pub xoffset: f32,
-    pub clip: Rect,
-}
-
-pub struct DrawContext<R: Resources, C: CommandBuffer<R>> {
-    pub encoder: Encoder<R, C>,
-    pub color: TargetRef<R>,
-    pub depth: DepthRef<R>,
-    pub left: EyeContext,
-    pub right: EyeContext,
-}
+pub use self::unishade::{UnishadeStyle};
 
 pub struct Styler<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
@@ -55,11 +43,11 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         &self,
         ctx: &mut DrawContext<R, C>,
         model: Matrix4<f32>,
-        obj: &Object<R, E::Vertex>,
+        mesh: &Mesh<R, E::Vertex>,
     )
         where C: CommandBuffer<R>
     {
-        if let Some(ref sty) = self.map.get(&obj.prim) {
+        if let Some(ref sty) = self.map.get(&mesh.prim) {
             let mut inputs = self.inputs.borrow_mut();
             let mut trans = TransformBlock {
                 model: model.into(),
@@ -74,8 +62,8 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 ctx.color.clone(),
                 ctx.depth.clone(),
                 ctx.left.clip,
-                &obj.slice,
-                obj.buf.clone(),
+                &mesh.slice,
+                mesh.buf.clone(),
             );
 
             trans.view = ctx.right.view.into();
@@ -88,11 +76,11 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 ctx.color.clone(),
                 ctx.depth.clone(),
                 ctx.right.clip,
-                &obj.slice,
-                obj.buf.clone(),
+                &mesh.slice,
+                mesh.buf.clone(),
             );
         } else {
-            error!("Style is not set up for \"{:?}\"", obj.prim);
+            error!("Style is not set up for \"{:?}\"", mesh.prim);
         }
     }
 

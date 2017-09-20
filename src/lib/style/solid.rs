@@ -1,13 +1,31 @@
-use gfx::{Resources, CommandBuffer, ShaderSet};
-use gfx::pso::{PipelineState};
+use gfx::{self, Resources, CommandBuffer, ShaderSet, Factory, Rect, Slice, Encoder};
+use gfx::pso::PipelineState;
 use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
 use gfx::state::Rasterizer;
 
-use super::*;
-use defines::solid as solidpso;
-use defines::*;
-use shaders;
+use super::{StyleInputs, Style};
+use super::shaders::file;
+use lib::mesh::{Primitive, VertC};
+use lib::{TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
+
+gfx_defines!{
+    pipeline pl {
+        verts: gfx::VertexBuffer<VertC> = (),
+        transform: gfx::ConstantBuffer<TransformBlock> = "transform",
+        scissor: gfx::Scissor = (), // TODO: Replace scissoring with viewport
+        color: gfx::RenderTarget<ColorFormat> = "f_color",
+        depth: gfx::DepthTarget<DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
+    }
+}
+
+shader!(shader {
+    vertex: file("shaders/transform.v.glsl")
+        .define("COLOR"),
+    fragment: file("shaders/simple.f.glsl")
+        .define_to("I_POS", "v_pos")
+        .define_to("I_COLOR", "v_color")
+});
 
 pub struct SolidInputs<R: Resources> {
     shaders: ShaderSet<R>,
@@ -20,7 +38,7 @@ impl<R: Resources> StyleInputs<R> for SolidInputs<R> {
 }
 
 pub struct SolidStyle<R: Resources> {
-    pso: PipelineState<R, solidpso::Meta>,
+    pso: PipelineState<R, pl::Meta>,
 }
 
 impl<R: Resources> Style<R> for SolidStyle<R> {
@@ -34,7 +52,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         r: Rasterizer,
     ) -> Self {
         SolidStyle {
-            pso: f.create_pipeline_state(&i.shaders, p, r, solidpso::new()).unwrap(),
+            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new()).unwrap(),
         }
     }
 
@@ -42,7 +60,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         f: &mut F,
     ) -> SolidInputs<R> {
         SolidInputs {
-            shaders: shaders::simple(f).unwrap(),
+            shaders: shader(f).unwrap(),
             transform: f.create_constant_buffer(1),
         }
     }
@@ -59,7 +77,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
     )
         where C: CommandBuffer<R>
     {
-        enc.draw(slice, &self.pso, &solidpso::Data {
+        enc.draw(slice, &self.pso, &pl::Data {
             color: color,
             depth: depth,
             verts: buf,

@@ -24,12 +24,10 @@ use glutin::GlContext;
 use cgmath::prelude::*;
 use cgmath::Matrix4;
 
-mod shaders;
 mod app;
-mod defines;
-mod object;
-mod load;
-mod style;
+pub mod lib;
+
+use lib::context;
 
 fn main() {
     // Logging setup
@@ -124,17 +122,17 @@ fn main() {
 
 
     // setup context
-    let mut ctx = style::DrawContext {
+    let mut ctx = context::DrawContext {
         encoder: factory.create_command_buffer().into(),
         color: if mock { wcolor } else { surface },
         depth: if mock { wdepth } else { depth },
-        left: style::EyeContext {
+        left: context::EyeContext {
             view: Matrix4::identity(),
             proj: Matrix4::identity(),
             xoffset: -0.5,
             clip: left_clip,
         },
-        right: style::EyeContext {
+        right: context::EyeContext {
             view: Matrix4::identity(),
             proj: Matrix4::identity(),
             xoffset: 0.5,

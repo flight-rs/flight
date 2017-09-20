@@ -1,13 +1,14 @@
 use std::path::Path;
-use gfx::{self, Factory, Primitive};
+use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
 use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
 use cgmath::prelude::*;
 use cgmath::*;
-use object::*;
-use load::*;
-use style::*;
-use defines::*;
+
+use lib::mesh::*;
+use lib::context::DrawContext;
+use lib::load::load_wavefront;
+use lib::style::{Styler, SolidStyle, UnishadeStyle};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
@@ -16,9 +17,9 @@ pub struct App<R: gfx::Resources> {
     gamepads: Vec<VRGamepadPtr>,
     solid: Styler<R, SolidStyle<R>>,
     unishade: Styler<R, UnishadeStyle<R>>,
-    grid: Object<R, VertC>,
-    controller_grid: Object<R, VertC>,
-    controller: Object<R, VertN>,
+    grid: Mesh<R, VertC>,
+    controller_grid: Mesh<R, VertC>,
+    controller: Mesh<R, VertN>,
 }
 
 pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
@@ -32,7 +33,7 @@ pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
     }))
 }
 
-fn grid_lines(count: u32, size: f32) -> ObjectSource<VertC> {
+fn grid_lines(count: u32, size: f32) -> MeshSource<VertC> {
     let mut lines = Vec::new();
     let base_color = [0.2, 0.2, 0.2];
     let light_color = [0.8, 0.8, 0.8];
@@ -56,7 +57,7 @@ fn grid_lines(count: u32, size: f32) -> ObjectSource<VertC> {
             lines.push(VertC { pos: [a, b, rad], color: line_color[2] });
         }
     }
-    ObjectSource {
+    MeshSource {
         verts: lines,
         inds: Indexing::All,
         prim: Primitive::LineList,
@@ -111,13 +112,6 @@ impl<R: gfx::Resources> App<R> {
 
         // Draw grid
         self.solid.draw(ctx, stage, &self.grid);
-
-        // Draw a controller out in the middle of nowhere so we can test stuff
-        self.unishade.draw(ctx, Matrix4::from(Decomposed {
-            scale: 10.,
-            rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),
-            disp: Vector3::new(-2., -2., -4.5),
-        }), &self.controller);
 
         // Draw controllers
         let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g));

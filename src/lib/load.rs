@@ -1,12 +1,10 @@
 use wavefront::*;
-use object::{ObjectSource, Indexing};
-use defines::VertN;
-use gfx::Primitive;
+use super::mesh::{MeshSource, Indexing, VertN, Primitive};
 use std::collections::HashMap;
 
 
 // TODO: Result instead of default or panic
-pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> ObjectSource<VertN> {
+pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertN> {
     let mut verts = Vec::new();
     let mut ind_look = HashMap::new();
     let mut inds = Vec::new();
@@ -20,7 +18,7 @@ pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> ObjectSource<VertN> {
         }));
         inds.extend(poly);
     }
-    ObjectSource {
+    MeshSource {
         verts: verts,
         inds: Indexing::Inds(inds),
         prim: Primitive::TriangleList,
