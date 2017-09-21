@@ -2,6 +2,7 @@ pub mod style;
 pub mod load;
 pub mod mesh;
 pub mod context;
+pub mod volume;
 
 use gfx;
 use gfx::shade::core::CreateShaderError;
