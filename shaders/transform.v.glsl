@@ -25,6 +25,13 @@ in vec3 a_color;
 out vec3 v_color;
 #endif
 
+#ifdef TAN
+in vec3 a_tan;
+out vec3 v_tan;
+in vec3 a_bitan;
+out vec3 v_bitan;
+#endif
+
 void main() {
     vec4 p = model * vec4(a_pos, 1);
     v_pos = p.xyz;
@@ -40,6 +47,11 @@ void main() {
 
     #ifdef COLOR
     v_color = a_color;
+    #endif
+
+    #ifdef TAN
+    v_tan = (model * vec4(a_tan, 0)).xyz;
+    v_bitan = (model * vec4(a_bitan, 0)).xyz;
     #endif
 
     vec4 c = proj * view * p;
