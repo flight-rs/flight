@@ -43,6 +43,8 @@ impl Volume for Sphere {
             let d = (r.powi(2) + (self.center-ray.origin).magnitude().powi(2) ).sqrt();
             let s = (r.powi(2) + self.radius.powi(2)).sqrt();
             let intersectDistance = d - s;
+            let intersectPoint = ray.origin + (ray.direction * intersectDistance);
+
             unimplemented!();
         } else { None }
     }
