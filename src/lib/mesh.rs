@@ -231,29 +231,33 @@ pub enum Indexing {
 
 /// A mesh description that must be sent to the GPU before it can be drawn.
 #[derive(Clone)]
-pub struct MeshSource<V> {
+pub struct MeshSource<V, M> {
     /// Vertices
     pub verts: Vec<V>,
     /// Indexing scheme
     pub inds: Indexing,
     /// Primitive type
     pub prim: Primitive,
+    /// Material data
+    pub mat: M,
 }
 
 /// A reference to a GPU mesh object that can be drawn.
 #[derive(Clone)]
-pub struct Mesh<R: Resources, T: Vertex> {
+pub struct Mesh<R: Resources, T: Vertex, M> {
     /// Reference to slice object (index buffer or range)
     pub slice: Slice<R>,
     /// Reference to VBO
     pub buf: Buffer<R, T>,
     /// Primitive type
     pub prim: Primitive,
+        /// Material data
+    pub mat: M,
 }
 
-impl<T: Vertex> MeshSource<T> {
+impl<T: Vertex, M> MeshSource<T, M> {
     /// Transfer this mesh to the GPU.
-    pub fn build<R: Resources, F: FactoryExt<R>>(self, f: &mut F) -> Mesh<R, T> {
+    pub fn build<R: Resources, F: FactoryExt<R>>(self, f: &mut F) -> Mesh<R, T, M> {
         use self::Indexing::*;
 
         let (buf, slice) = match self.inds {
@@ -277,36 +281,49 @@ impl<T: Vertex> MeshSource<T> {
             buf: buf,
             slice: slice,
             prim: self.prim,
+            mat: self.mat,
+        }
+    }
+
+    pub fn with_material<N>(self, mat: N) -> MeshSource<T, N> {
+        MeshSource {
+            verts: self.verts,
+            inds: self.inds,
+            prim: self.prim,
+            mat: mat,
         }
     }
 }
 
-impl<V: WithNorm> MeshSource<V> {
-    pub fn with_normal(self, n: Vector3<f32>) -> MeshSource<V::With> {
+impl<V: WithNorm, M> MeshSource<V, M> {
+    pub fn with_normal(self, n: Vector3<f32>) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_norm(n.into())).collect(),
             inds: self.inds,
             prim: self.prim,
+            mat: self.mat,
         }
     }
 }
 
-impl<V: WithColor> MeshSource<V> {
-    pub fn with_color(self, c: [f32; 3]) -> MeshSource<V::With> {
+impl<V: WithColor, M> MeshSource<V, M> {
+    pub fn with_color(self, c: [f32; 3]) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_color(c)).collect(),
             inds: self.inds,
             prim: self.prim,
+            mat: self.mat,
         }
     }
 }
 
-impl<V: WithTex> MeshSource<V> {
-    pub fn with_tex(self, c: [f32; 2]) -> MeshSource<V::With> {
+impl<V: WithTex, M> MeshSource<V, M> {
+    pub fn with_tex(self, c: [f32; 2]) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_tex(c)).collect(),
             inds: self.inds,
             prim: self.prim,
+            mat: self.mat,
         }
     }
 }
@@ -393,12 +410,12 @@ fn safe_normalize(v: &mut Vector3<f32>) {
     if mag != 0. { *v /= mag }
 }
 
-impl<V> MeshSource<V>
+impl<V, M> MeshSource<V, M>
     where V: WithTan + HasTex, V::With: HasTex
 {
     /// Computes tangents and bitangents for a textured mesh so that normal mapping can be used. 
     /// The calculated vectors will be 0 if the primitive type is not `TriangleList` or `TriangleStrip`.
-    pub fn compute_tan(self) -> MeshSource<V::With> {
+    pub fn compute_tan(self) -> MeshSource<V::With, M> {
         let mut new: Vec<_> = self.verts.into_iter()
             .map(|v| v.with_tan([0.; 3], [0.; 3]))
             .collect();
@@ -416,6 +433,7 @@ impl<V> MeshSource<V>
             verts: new,
             inds: self.inds,
             prim: self.prim,
+            mat: self.mat,
         }
     }
 }

@@ -35,7 +35,8 @@ shader!(shader {
 
 pub struct UnishadeInputs<R: Resources> {
     shaders: ShaderSet<R>,
-    transform: Buffer<R, TransformBlock>,
+    transform: Option<TransformBlock>,
+    transform_block: Buffer<R, TransformBlock>,
     shade: Option<UnishadeBlock>,
     shade_block: Buffer<R, UnishadeBlock>,
 }
@@ -50,7 +51,7 @@ impl<R: Resources> UnishadeInputs<R> {
 }
 
 impl<R: Resources> StyleInputs<R> for UnishadeInputs<R> {
-    fn transform_buffer(&self) -> &Buffer<R, TransformBlock> { &self.transform }
+    fn transform(&mut self, block: TransformBlock) { self.transform = Some(block); }
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
 }
 
@@ -61,6 +62,7 @@ pub struct UnishadeStyle<R: Resources> {
 impl<R: Resources> Style<R> for UnishadeStyle<R> {
     type Vertex = VertN;
     type Inputs = UnishadeInputs<R>;
+    type Material = ();
 
     fn new<F: Factory<R> + FactoryExt<R>>(
         f: &mut F,
@@ -78,7 +80,8 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
     ) -> UnishadeInputs<R> {
         UnishadeInputs {
             shaders: shader(f).unwrap(),
-            transform: f.create_constant_buffer(1),
+            transform: None,
+            transform_block: f.create_constant_buffer(1),
             shade: None,
             shade_block: f.create_constant_buffer(1),
         }
@@ -93,9 +96,13 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
         scissor: Rect,
         slice: &Slice<R>,
         buf: Buffer<R, Self::Vertex>,
+        _: &(),
     )
         where C: CommandBuffer<R>
     {
+        if let Some(t) = inputs.transform.take() { 
+            enc.update_constant_buffer(&inputs.transform_block, &t);
+        }
         if let Some(shade) = inputs.shade.take() {
             enc.update_constant_buffer(&inputs.shade_block, &shade);
         }
@@ -104,7 +111,7 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
             depth: depth,
             verts: buf,
             scissor: scissor,
-            transform: inputs.transform.clone(),
+            transform: inputs.transform_block.clone(),
             shade: inputs.shade_block.clone(),
         });
     }

@@ -4,6 +4,7 @@ layout(std140) uniform transform {
     mat4 model;
     mat4 view;
     mat4 proj;
+    vec4 eye_pos;
     float xoffset;
 };
 

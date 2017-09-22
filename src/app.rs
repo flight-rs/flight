@@ -5,21 +5,24 @@ use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
 use cgmath::prelude::*;
 use cgmath::*;
 
+use lib::{Texture, Light};
 use lib::mesh::*;
 use lib::context::DrawContext;
 use lib::load::load_wavefront;
-use lib::style::{Styler, SolidStyle, UnishadeStyle};
+use lib::style::{Styler, SolidStyle, UnishadeStyle, PbrStyle, PbrMaterial};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
+pub const BACKGROUND: [f32; 4] = [0.529, 0.808, 0.980, 1.0];
 
 pub struct App<R: gfx::Resources> {
     gamepads: Vec<VRGamepadPtr>,
     solid: Styler<R, SolidStyle<R>>,
     unishade: Styler<R, UnishadeStyle<R>>,
-    grid: Mesh<R, VertC>,
-    controller_grid: Mesh<R, VertC>,
-    controller: Mesh<R, VertN>,
+    pbr: Styler<R, PbrStyle<R>>,
+    grid: Mesh<R, VertC, ()>,
+    controller_grid: Mesh<R, VertC, ()>,
+    controller: Mesh<R, VertNTT, PbrMaterial<R>>,
 }
 
 pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
@@ -33,7 +36,7 @@ pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
     }))
 }
 
-fn grid_lines(count: u32, size: f32) -> MeshSource<VertC> {
+fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
     let mut lines = Vec::new();
     let base_color = [0.2, 0.2, 0.2];
     let light_color = [0.8, 0.8, 0.8];
@@ -61,7 +64,22 @@ fn grid_lines(count: u32, size: f32) -> MeshSource<VertC> {
         verts: lines,
         inds: Indexing::All,
         prim: Primitive::LineList,
+        mat: (),
     }
+}
+
+fn load_object<P, R, F>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>> 
+    where P: AsRef<Path>, R: gfx::Resources, F: gfx::Factory<R>
+{
+    use gfx::format::*;
+    load_wavefront(
+        &::wavefront::Obj::load(path.as_ref()).unwrap()
+    ).compute_tan().with_material(PbrMaterial {
+        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF]),
+        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0xA0, 0xA0, 0xA0, 0xFF]),
+        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00),
+        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x03),
+    }).build(f)
 }
 
 impl<R: gfx::Resources> App<R> {
@@ -76,16 +94,35 @@ impl<R: gfx::Resources> App<R> {
         unishade.setup(factory, Primitive::TriangleList);
         unishade.cfg(|s| s.colors([0.184, 0.310, 0.310, 1.0], [0.467, 0.533, 0.600, 1.0]));
 
+        let mut pbr: Styler<_, PbrStyle<_>> = Styler::new(factory);
+        pbr.setup(factory, Primitive::TriangleList);
+        pbr.cfg(|s| {
+            s.ambient(BACKGROUND);
+            s.lights(&[
+                Light {
+                    pos: [4., 0., 0., 1.],
+                    color: [0.8, 0.6, 0.6, 100.],
+                },
+                Light {
+                    pos: [0., 4., 0., 1.],
+                    color: [0.0, 0.8, 0.6, 100.],
+                },
+                Light {
+                    pos: [0., 0., 4., 1.],
+                    color: [0.0, 0.6, 0.8, 100.],
+                },
+            ]);
+        });
+
         // Construct App
         App {
             gamepads: vec![],
             solid: solid,
             unishade: unishade,
+            pbr: pbr,
             grid: grid_lines(8, 10.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
-            controller: load_wavefront(
-                &::wavefront::Obj::load(&Path::new("controller.obj")).unwrap()
-            ).build(factory),
+            controller: load_object(factory, "controller.obj"),
         }
     }
 
@@ -108,16 +145,23 @@ impl<R: gfx::Resources> App<R> {
 
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
-        ctx.encoder.clear(&ctx.color, [0.529, 0.808, 0.980, 1.0]);
+        ctx.encoder.clear(&ctx.color, BACKGROUND);
 
         // Draw grid
         self.solid.draw(ctx, stage, &self.grid);
 
         // Draw controllers
-        let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g));
+        let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g))
+        .chain(::std::iter::once(Controller {
+            pose: Matrix4::from(Decomposed {	
+                scale: 10.,		
+                rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),		
+                disp: Vector3::new(-2., -2., -4.5),		
+            }),
+        }));
         for cont in controllers {
             self.solid.draw(ctx, cont.pose, &self.controller_grid);
-            self.unishade.draw(ctx, cont.pose, &self.controller);
+            self.pbr.draw(ctx, cont.pose, &self.controller);
         }
     }
 }

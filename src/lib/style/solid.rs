@@ -29,11 +29,12 @@ shader!(shader {
 
 pub struct SolidInputs<R: Resources> {
     shaders: ShaderSet<R>,
-    transform: Buffer<R, TransformBlock>,
+    transform: Option<TransformBlock>,
+    transform_block: Buffer<R, TransformBlock>,
 }
 
 impl<R: Resources> StyleInputs<R> for SolidInputs<R> {
-    fn transform_buffer(&self) -> &Buffer<R, TransformBlock> { &self.transform }
+    fn transform(&mut self, block: TransformBlock) { self.transform = Some(block); }
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
 }
 
@@ -44,6 +45,7 @@ pub struct SolidStyle<R: Resources> {
 impl<R: Resources> Style<R> for SolidStyle<R> {
     type Vertex = VertC;
     type Inputs = SolidInputs<R>;
+    type Material = ();
 
     fn new<F: Factory<R> + FactoryExt<R>>(
         f: &mut F,
@@ -61,7 +63,8 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
     ) -> SolidInputs<R> {
         SolidInputs {
             shaders: shader(f).unwrap(),
-            transform: f.create_constant_buffer(1),
+            transform: None,
+            transform_block: f.create_constant_buffer(1),
         }
     }
     
@@ -74,15 +77,19 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         scissor: Rect,
         slice: &Slice<R>,
         buf: Buffer<R, Self::Vertex>,
+        _: &(),
     )
         where C: CommandBuffer<R>
     {
+        if let Some(t) = inputs.transform.take() { 
+            enc.update_constant_buffer(&inputs.transform_block, &t);
+        }
         enc.draw(slice, &self.pso, &pl::Data {
             color: color,
             depth: depth,
             verts: buf,
             scissor: scissor,
-            transform: inputs.transform.clone(),
+            transform: inputs.transform_block.clone(),
         });
     }
 }

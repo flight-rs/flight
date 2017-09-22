@@ -14,10 +14,13 @@ use lib::mesh::{Mesh, Vertex};
 mod shaders;
 
 mod solid;
-pub use self::solid::{SolidStyle};
+pub use self::solid::{SolidStyle, SolidInputs};
 
 mod unishade;
-pub use self::unishade::{UnishadeStyle};
+pub use self::unishade::{UnishadeStyle, UnishadeBlock, UnishadeInputs};
+
+mod pbr;
+pub use self::pbr::{PbrStyle, PbrBlock, PbrMaterial, PbrInputs};
 
 pub struct Styler<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
@@ -43,7 +46,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         &self,
         ctx: &mut DrawContext<R, C>,
         model: Matrix4<f32>,
-        mesh: &Mesh<R, E::Vertex>,
+        mesh: &Mesh<R, E::Vertex, E::Material>,
     )
         where C: CommandBuffer<R>
     {
@@ -53,9 +56,10 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 model: model.into(),
                 view: ctx.left.view.into(),
                 proj: ctx.left.proj.into(),
+                eye: (-ctx.left.view.w).into(),
                 xoffset: ctx.left.xoffset,
             };
-            ctx.encoder.update_constant_buffer(inputs.transform_buffer(), &trans);
+            inputs.transform(trans.clone());
             sty.draw_raw(
                 &mut *inputs,
                 &mut ctx.encoder,
@@ -64,12 +68,14 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 ctx.left.clip,
                 &mesh.slice,
                 mesh.buf.clone(),
+                &mesh.mat,
             );
 
             trans.view = ctx.right.view.into();
             trans.proj = ctx.right.proj.into();
+            trans.eye = (-ctx.right.view.w).into();
             trans.xoffset = ctx.right.xoffset;
-            ctx.encoder.update_constant_buffer(inputs.transform_buffer(), &trans);
+            inputs.transform(trans);
             sty.draw_raw(
                 &mut *inputs,
                 &mut ctx.encoder,
@@ -78,6 +84,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 ctx.right.clip,
                 &mesh.slice,
                 mesh.buf.clone(),
+                &mesh.mat,
             );
         } else {
             error!("Style is not set up for \"{:?}\"", mesh.prim);
@@ -92,6 +99,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
 pub trait Style<R: Resources> {
     type Vertex: Vertex;
     type Inputs: StyleInputs<R>;
+    type Material;
     
     fn new<F: Factory<R> + FactoryExt<R>>(
         &mut F,
@@ -113,11 +121,12 @@ pub trait Style<R: Resources> {
         Rect,
         &Slice<R>,
         Buffer<R, Self::Vertex>,
+        &Self::Material,
     )
         where C: CommandBuffer<R>;
 }
 
 pub trait StyleInputs<R: Resources> {
-    fn transform_buffer(&self) -> &Buffer<R, TransformBlock>;
+    fn transform(&mut self, block: TransformBlock);
     fn shader_set(&self) -> &ShaderSet<R>;
 }
