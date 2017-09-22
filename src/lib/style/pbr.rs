@@ -137,7 +137,6 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
             enc.update_constant_buffer(&inputs.transform_block, &t);
         }
         if let Some(l) = inputs.lights.take() {
-            println!("{:?}", l);
             enc.update_buffer(&inputs.lights_block, &l, 0).unwrap();
         }
         if let Some(p) = inputs.params.take() {

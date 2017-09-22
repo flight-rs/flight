@@ -116,5 +116,5 @@ void main() {
     }
 
     // OUT
-    f_lum = vec4(lum, 1);
+    f_lum = vec4(pow(lum, vec3(1 / 2.2)), 1);
 } 

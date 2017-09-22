@@ -2,6 +2,7 @@ use gfx::{Resources, Encoder, Primitive, Rect, CommandBuffer, Slice, ShaderSet, 
 use gfx::handle::Buffer;
 use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
+use cgmath::prelude::*;
 use cgmath::Matrix4;
 use fnv::FnvHashMap;
 use std::cell::RefCell;
@@ -25,6 +26,10 @@ pub use self::pbr::{PbrStyle, PbrBlock, PbrMaterial, PbrInputs};
 pub struct Styler<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
     map: FnvHashMap<Primitive, E>,
+}
+
+fn get_eye(m: &Matrix4<f32>) -> [f32; 4] {
+    [-m.w.x, -m.w.y, -m.w.z, 1.]
 }
 
 impl<R: Resources, E: Style<R>> Styler<R, E> {
@@ -56,7 +61,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 model: model.into(),
                 view: ctx.left.view.into(),
                 proj: ctx.left.proj.into(),
-                eye: (-ctx.left.view.w).into(),
+                eye: get_eye(&ctx.left.view),
                 xoffset: ctx.left.xoffset,
             };
             inputs.transform(trans.clone());
@@ -73,7 +78,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
 
             trans.view = ctx.right.view.into();
             trans.proj = ctx.right.proj.into();
-            trans.eye = (-ctx.right.view.w).into();
+            trans.eye = get_eye(&ctx.right.view);
             trans.xoffset = ctx.right.xoffset;
             inputs.transform(trans);
             sty.draw_raw(

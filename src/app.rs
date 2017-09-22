@@ -78,7 +78,7 @@ fn load_object<P, R, F>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>>
         normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF]),
         albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0xA0, 0xA0, 0xA0, 0xFF]),
         metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00),
-        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x03),
+        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20),
     }).build(f)
 }
 
@@ -101,15 +101,15 @@ impl<R: gfx::Resources> App<R> {
             s.lights(&[
                 Light {
                     pos: [4., 0., 0., 1.],
-                    color: [0.8, 0.6, 0.6, 100.],
+                    color: [0.8, 0.2, 0.2, 100.],
                 },
                 Light {
                     pos: [0., 4., 0., 1.],
-                    color: [0.0, 0.8, 0.6, 100.],
+                    color: [0.2, 0.8, 0.2, 100.],
                 },
                 Light {
                     pos: [0., 0., 4., 1.],
-                    color: [0.0, 0.6, 0.8, 100.],
+                    color: [0.2, 0.2, 0.8, 100.],
                 },
             ]);
         });
@@ -145,20 +145,13 @@ impl<R: gfx::Resources> App<R> {
 
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
-        ctx.encoder.clear(&ctx.color, BACKGROUND);
+        ctx.encoder.clear(&ctx.color, [BACKGROUND[0].powf(1. / 2.2), BACKGROUND[1].powf(1. / 2.2), BACKGROUND[2].powf(1. / 2.2), BACKGROUND[3]]);
 
         // Draw grid
         self.solid.draw(ctx, stage, &self.grid);
 
         // Draw controllers
-        let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g))
-        .chain(::std::iter::once(Controller {
-            pose: Matrix4::from(Decomposed {	
-                scale: 10.,		
-                rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),		
-                disp: Vector3::new(-2., -2., -4.5),		
-            }),
-        }));
+        let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g));
         for cont in controllers {
             self.solid.draw(ctx, cont.pose, &self.controller_grid);
             self.pbr.draw(ctx, cont.pose, &self.controller);
