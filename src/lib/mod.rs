@@ -14,6 +14,7 @@ pub type DepthFormat = (D24_S8, Unorm);
 pub type TargetRef<R> = RenderTargetView<R, ColorFormat>;
 pub type DepthRef<R> = DepthStencilView<R, DepthFormat>;
 pub type ShaderResult<R> = Result<gfx::ShaderSet<R>, CreateShaderError>;
+pub type PbrMesh<R> = mesh::Mesh<R, mesh::VertNTT, style::PbrMaterial<R>>;
 
 // Define GFX rendering stuff and pipelines
 gfx_defines!{

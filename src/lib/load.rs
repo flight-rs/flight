@@ -1,7 +1,18 @@
 use wavefront::*;
-use super::mesh::{MeshSource, Indexing, VertNT, Primitive};
-use std::collections::HashMap;
+use image::{DynamicImage, Pixel, ImageBuffer};
+use image::open as open_image;
+use gfx;
+use gfx::format;
+use gfx::texture::{Kind, AaMode};
+use gfx::handle;
 
+use std::collections::HashMap;
+use std::ops::Deref;
+use std::path::Path;
+
+use super::{Texture};
+use super::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
+use super::style::PbrMaterial;
 
 // TODO: Result instead of default or panic
 pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {
@@ -25,4 +36,107 @@ pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {
         prim: Primitive::TriangleList,
         mat: (),
     }
+}
+
+pub fn load_image<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
+    -> Texture<R, T>
+    where 
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+        T: format::TextureFormat,
+        <<T as format::Formatted>::Surface as format::SurfaceTyped>::DataType: ImageData,
+{
+    let data = <T::Surface as format::SurfaceTyped>::DataType::load(&img, aa);
+    let (_, t): (
+        gfx::handle::Texture<R, <T as format::Formatted>::Surface>,
+        _
+    ) = f.create_texture_immutable_u8::<T>(
+        data.0,
+        &[data.1.as_ref()],
+    ).unwrap();
+    Texture {
+        buffer: t,
+        sampler: samp,
+    }
+}
+
+pub trait ImageData {
+    // TODO: make more efficient (currently requires too much iterating and allocating)
+    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>);
+}
+
+fn array_data<P, S>(buf: ImageBuffer<P, S>, aa: AaMode) -> (Kind, Vec<u8>) 
+    where 
+        P: Pixel<Subpixel=u8> + 'static,
+        S: Deref<Target = [u8]>,
+{
+    (
+        Kind::D2(buf.width() as u16, buf.height() as u16, aa), 
+        buf.into_raw().deref().to_vec(),
+    )
+}
+
+impl ImageData for [u8; 4] {
+    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
+        array_data(img.to_rgba(), aa)
+    }
+}
+
+impl ImageData for [u8; 3] {
+    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
+        array_data(img.to_rgb(), aa)
+    }
+}
+
+impl ImageData for u8 {
+    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
+        array_data(img.to_luma(), aa)
+    }
+}
+
+pub fn load_object<R, F, P>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>>
+    where
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+        P: AsRef<Path>,
+{
+    use gfx::texture::*;
+    let sampler = f.create_sampler(SamplerInfo::new(FilterMethod::Bilinear, WrapMode::Tile));
+    let aa = AaMode::Single;
+    let path = path.as_ref();
+
+    // TODO: Result instead of unwrapping!
+    let normal = load_image(
+        f,
+        open_image(path.join("normal.png")).unwrap(),
+        sampler.clone(),
+        aa
+    );
+    let albedo = load_image(
+        f,
+        open_image(path.join("albedo.png")).unwrap(),
+        sampler.clone(),
+        aa
+    );
+    let metalness = load_image(
+        f,
+        open_image(path.join("metalness.png")).unwrap(),
+        sampler.clone(),
+        aa
+    );
+    let roughness = load_image(
+        f,
+        open_image(path.join("roughness.png")).unwrap(),
+        sampler.clone(),
+        aa
+    );
+    load_wavefront(
+        &Obj::load(&path.join("model.obj")).unwrap()
+    ).compute_tan()
+    .with_material(PbrMaterial {
+        normal: normal,
+        albedo: albedo,
+        metalness: metalness,
+        roughness: roughness,
+    }).build(f)
 }

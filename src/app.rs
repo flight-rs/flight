@@ -5,10 +5,10 @@ use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
 use cgmath::prelude::*;
 use cgmath::*;
 
-use lib::{Texture, Light};
+use lib::{Texture, Light, PbrMesh};
 use lib::mesh::*;
 use lib::context::DrawContext;
-use lib::load::load_wavefront;
+use lib::load;
 use lib::style::{Styler, SolidStyle, UnishadeStyle, PbrStyle, PbrMaterial};
 
 pub const NEAR_PLANE: f64 = 0.1;
@@ -22,7 +22,8 @@ pub struct App<R: gfx::Resources> {
     pbr: Styler<R, PbrStyle<R>>,
     grid: Mesh<R, VertC, ()>,
     controller_grid: Mesh<R, VertC, ()>,
-    controller: Mesh<R, VertNTT, PbrMaterial<R>>,
+    controller: PbrMesh<R>,
+    teapot: PbrMesh<R>,
 }
 
 pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
@@ -68,11 +69,11 @@ fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
     }
 }
 
-fn load_object<P, R, F>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>> 
+fn load_my_simple_object<P, R, F>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>> 
     where P: AsRef<Path>, R: gfx::Resources, F: gfx::Factory<R>
 {
     use gfx::format::*;
-    load_wavefront(
+    load::load_wavefront(
         &::wavefront::Obj::load(path.as_ref()).unwrap()
     ).compute_tan().with_material(PbrMaterial {
         normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF]),
@@ -122,7 +123,8 @@ impl<R: gfx::Resources> App<R> {
             pbr: pbr,
             grid: grid_lines(8, 10.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
-            controller: load_object(factory, "controller.obj"),
+            controller: load_my_simple_object(factory, "assets/controller.obj"),
+            teapot: load::load_object(factory, "assets/teapot_wood/")
         }
     }
 
@@ -149,6 +151,13 @@ impl<R: gfx::Resources> App<R> {
 
         // Draw grid
         self.solid.draw(ctx, stage, &self.grid);
+
+        // Draw teapot
+        self.pbr.draw(ctx, stage * Matrix4::from(Decomposed {	
+            scale: 1.,		
+            rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),		
+            disp: Vector3::new(3., 1., 3.),		
+        }), &self.teapot);
 
         // Draw controllers
         let controllers = self.gamepads.iter().filter_map(|g| Controller::from_gp(g));

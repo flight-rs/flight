@@ -12,6 +12,7 @@ extern crate glutin;
 extern crate cgmath;
 extern crate obj as wavefront;
 extern crate fnv;
+extern crate image;
 
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
