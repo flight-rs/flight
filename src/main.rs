@@ -73,7 +73,7 @@ fn main() {
     // Window manager stuff
     let mut events_loop = glutin::EventsLoop::new();
     let window_builder = glutin::WindowBuilder::new()
-        .with_visibility(mock)
+        .with_visibility(false)
         .with_dimensions(render_width as u32, render_height as u32)
         .with_title("Mock OpenVR Display");
     let context = glutin::ContextBuilder::new();
@@ -104,7 +104,13 @@ fn main() {
     let (.., depth) = factory.create_depth_stencil(render_width * 2, render_height).unwrap();
 
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
-    let mut application = app::App::new(&mut factory);
+    let mut application = match app::App::new(&mut factory) {
+        Ok(a) => a,
+        Err(e) => {
+            error!("Could not start application: {}", e);
+            return
+        },
+    };
     application.set_gamepads(gamepads.clone());
 
     // HMD (head-mounted display) layer information
@@ -120,7 +126,6 @@ fn main() {
         multisampling: false,
     };
     display.borrow_mut().start_present(Some(attributes));
-
 
     // setup context
     let mut ctx = context::DrawContext {
@@ -140,6 +145,8 @@ fn main() {
             clip: right_clip,
         },
     };
+
+    if mock { window.show() }
 
     // Main loop
     let mut running = true;
@@ -164,7 +171,7 @@ fn main() {
         }
 
         // Draw frame
-        application.draw(&mut ctx, &data, &frame);
+        application.draw(&mut ctx, &data);
 
         // Send instructions to OpenGL
         // TODO: Move flush to separate thread

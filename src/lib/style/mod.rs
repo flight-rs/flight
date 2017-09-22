@@ -2,12 +2,11 @@ use gfx::{Resources, Encoder, Primitive, Rect, CommandBuffer, Slice, ShaderSet, 
 use gfx::handle::Buffer;
 use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
-use cgmath::prelude::*;
 use cgmath::Matrix4;
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
-use lib::{TransformBlock, DepthRef, TargetRef};
+use lib::{TransformBlock, DepthRef, TargetRef, Error};
 use lib::context::*;
 use lib::mesh::{Mesh, Vertex};
 
@@ -33,26 +32,32 @@ fn get_eye(m: &Matrix4<f32>) -> [f32; 4] {
 }
 
 impl<R: Resources, E: Style<R>> Styler<R, E> {
-    pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Styler<R, E> {
-        Styler {
-            inputs: RefCell::new(E::init(f)),
+    pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Result<Styler<R, E>, Error> {
+        Ok(Styler {
+            inputs: RefCell::new(E::init(f)?),
             map: Default::default(),
-        }
+        })
     }
 
-    pub fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) {
+    pub fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) -> Result<(), Error> {
         let mut inputs = self.inputs.borrow_mut();
-        self.map.entry(prim).or_insert_with(move ||
-            E::new(f, &mut *inputs, prim, Rasterizer::new_fill())
-        );
+        use ::std::collections::hash_map::Entry::*;
+        match self.map.entry(prim) {
+            Vacant(e) => {
+                e.insert(E::new(f, &mut *inputs, prim, Rasterizer::new_fill())?);
+            },
+            _ => (),
+        }
+        Ok(())
     }
 
-    pub fn draw<C>(
+    pub fn try_draw<C>(
         &self,
         ctx: &mut DrawContext<R, C>,
         model: Matrix4<f32>,
         mesh: &Mesh<R, E::Vertex, E::Material>,
     )
+        -> Result<(), Error>
         where C: CommandBuffer<R>
     {
         if let Some(ref sty) = self.map.get(&mesh.prim) {
@@ -74,7 +79,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 &mesh.slice,
                 mesh.buf.clone(),
                 &mesh.mat,
-            );
+            )?;
 
             trans.view = ctx.right.view.into();
             trans.proj = ctx.right.proj.into();
@@ -90,9 +95,27 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 &mesh.slice,
                 mesh.buf.clone(),
                 &mesh.mat,
-            );
+            )?;
+
+            Ok(())
         } else {
-            error!("Style is not set up for \"{:?}\"", mesh.prim);
+            Err(
+                Error::invalid_primitive(mesh.prim)
+                .context("setup has not been done for this primitive type".to_owned())
+            )
+        }
+    }
+
+    pub fn draw<C>(
+        &self,
+        ctx: &mut DrawContext<R, C>,
+        model: Matrix4<f32>,
+        mesh: &Mesh<R, E::Vertex, E::Material>,
+    )
+        where C: CommandBuffer<R>
+    {
+        if let Err(e) = self.try_draw(ctx, model, mesh) {
+            error!("{}", e);
         }
     }
 
@@ -101,7 +124,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
     }
 }
 
-pub trait Style<R: Resources> {
+pub trait Style<R: Resources>: Sized {
     type Vertex: Vertex;
     type Inputs: StyleInputs<R>;
     type Material;
@@ -111,11 +134,11 @@ pub trait Style<R: Resources> {
         &mut Self::Inputs,
         Primitive,
         Rasterizer,
-    ) -> Self;
+    ) -> Result<Self, Error>;
 
     fn init<F: Factory<R> + FactoryExt<R>>(
         &mut F,
-    ) -> Self::Inputs;
+    ) -> Result<Self::Inputs, Error>;
 
     fn draw_raw<C>(
         &self,
@@ -128,6 +151,7 @@ pub trait Style<R: Resources> {
         Buffer<R, Self::Vertex>,
         &Self::Material,
     )
+        -> Result<(), Error>
         where C: CommandBuffer<R>;
 }
 

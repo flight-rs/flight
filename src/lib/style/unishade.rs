@@ -7,7 +7,7 @@ use gfx::state::Rasterizer;
 use super::{StyleInputs, Style};
 use super::shaders::file;
 use lib::mesh::{Primitive, VertN};
-use lib::{TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
+use lib::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
 
 gfx_defines!{
     constant UnishadeBlock {
@@ -26,9 +26,9 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")
+    vertex: file("shaders/transform.v.glsl")?
         .define("NORM"),
-    fragment: file("shaders/unishade.f.glsl")
+    fragment: file("shaders/unishade.f.glsl")?
         .define_to("I_POS", "v_pos")
         .define_to("I_NORM", "v_norm")
 });
@@ -69,22 +69,22 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
         i: &mut UnishadeInputs<R>,
         p: Primitive,
         r: Rasterizer,
-    ) -> Self {
-        UnishadeStyle {
-            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new()).unwrap(),
-        }
+    ) -> Result<Self, Error> {
+        Ok(UnishadeStyle {
+            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new())?,
+        })
     }
 
     fn init<F: Factory<R>>(
         f: &mut F,
-    ) -> UnishadeInputs<R> {
-        UnishadeInputs {
-            shaders: shader(f).unwrap(),
+    ) -> Result<UnishadeInputs<R>, Error> {
+        Ok(UnishadeInputs {
+            shaders: shader(f)?,
             transform: None,
             transform_block: f.create_constant_buffer(1),
             shade: None,
             shade_block: f.create_constant_buffer(1),
-        }
+        })
     }
     
     fn draw_raw<C>(
@@ -98,6 +98,7 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
         buf: Buffer<R, Self::Vertex>,
         _: &(),
     )
+        -> Result<(), Error>
         where C: CommandBuffer<R>
     {
         if let Some(t) = inputs.transform.take() { 
@@ -114,5 +115,6 @@ impl<R: Resources> Style<R> for UnishadeStyle<R> {
             transform: inputs.transform_block.clone(),
             shade: inputs.shade_block.clone(),
         });
+        Ok(())
     }
 }

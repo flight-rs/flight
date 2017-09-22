@@ -7,7 +7,7 @@ use gfx::state::Rasterizer;
 use super::{StyleInputs, Style};
 use super::shaders::file;
 use lib::mesh::{Primitive, VertC};
-use lib::{TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
+use lib::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
 
 gfx_defines!{
     pipeline pl {
@@ -20,9 +20,9 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")
+    vertex: file("shaders/transform.v.glsl")?
         .define("COLOR"),
-    fragment: file("shaders/simple.f.glsl")
+    fragment: file("shaders/simple.f.glsl")?
         .define_to("I_POS", "v_pos")
         .define_to("I_COLOR", "v_color")
 });
@@ -52,20 +52,20 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         i: &mut SolidInputs<R>,
         p: Primitive,
         r: Rasterizer,
-    ) -> Self {
-        SolidStyle {
-            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new()).unwrap(),
-        }
+    ) -> Result<Self, Error> {
+        Ok(SolidStyle {
+            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new())?,
+        })
     }
 
     fn init<F: Factory<R>>(
         f: &mut F,
-    ) -> SolidInputs<R> {
-        SolidInputs {
-            shaders: shader(f).unwrap(),
+    ) -> Result<SolidInputs<R>, Error> {
+        Ok(SolidInputs {
+            shaders: shader(f)?,
             transform: None,
             transform_block: f.create_constant_buffer(1),
-        }
+        })
     }
     
     fn draw_raw<C>(
@@ -79,6 +79,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         buf: Buffer<R, Self::Vertex>,
         _: &(),
     )
+        -> Result<(), Error>
         where C: CommandBuffer<R>
     {
         if let Some(t) = inputs.transform.take() { 
@@ -91,5 +92,6 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
             scissor: scissor,
             transform: inputs.transform_block.clone(),
         });
+        Ok(())
     }
 }

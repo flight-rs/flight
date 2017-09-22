@@ -4,6 +4,10 @@ pub mod mesh;
 pub mod context;
 pub mod volume;
 
+#[macro_use]
+mod error;
+pub use self::error::*;
+
 use gfx;
 use gfx::shade::core::CreateShaderError;
 use gfx::handle::*;
@@ -55,7 +59,8 @@ impl<R: gfx::Resources, T: TextureFormat> Texture<R, T> {
     }
 
     /// Build a single-pixel (single value) texture
-    pub fn uniform_value<F>(f: &mut F, val: <<T as Formatted>::Surface as SurfaceTyped>::DataType) -> Self
+    pub fn uniform_value<F>(f: &mut F, val: <<T as Formatted>::Surface as SurfaceTyped>::DataType)
+        -> Result<Self, Error>
         where F: gfx::Factory<R>
     {
         use gfx::texture::*;
@@ -65,11 +70,11 @@ impl<R: gfx::Resources, T: TextureFormat> Texture<R, T> {
         ) = f.create_texture_immutable::<T>(
             Kind::D2(1, 1, AaMode::Single),
             &[&[val]],
-        ).unwrap();
+        )?;
         let s = f.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Tile));
-        Texture {
+        Ok(Texture {
             buffer: t,
             sampler: s,
-        }
+        })
     }
 }

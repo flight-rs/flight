@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::path::Path;
 
-use super::{Texture};
+use super::{Error, Texture};
 use super::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
 use super::style::PbrMaterial;
 
@@ -39,7 +39,7 @@ pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {
 }
 
 pub fn load_image<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
-    -> Texture<R, T>
+    -> Result<Texture<R, T>, Error>
     where 
         R: gfx::Resources,
         F: gfx::Factory<R>,
@@ -53,11 +53,11 @@ pub fn load_image<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R
     ) = f.create_texture_immutable_u8::<T>(
         data.0,
         &[data.1.as_ref()],
-    ).unwrap();
-    Texture {
+    )?;
+    Ok(Texture {
         buffer: t,
         sampler: samp,
-    }
+    })
 }
 
 pub trait ImageData {
@@ -94,49 +94,51 @@ impl ImageData for u8 {
     }
 }
 
-pub fn load_object<R, F, P>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>>
+pub fn load_object<R, F, P>(f: &mut F, path: P)
+    -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
     where
         R: gfx::Resources,
         F: gfx::Factory<R>,
         P: AsRef<Path>,
 {
     use gfx::texture::*;
-    let sampler = f.create_sampler(SamplerInfo::new(FilterMethod::Bilinear, WrapMode::Tile));
     let aa = AaMode::Single;
     let path = path.as_ref();
+    info!("Loading object in {:?}", path);
 
-    // TODO: Result instead of unwrapping!
+    let sampler = f.create_sampler(SamplerInfo::new(FilterMethod::Bilinear, WrapMode::Tile));
+
     let normal = load_image(
         f,
-        open_image(path.join("normal.png")).unwrap(),
+        open_image(path.join("normal.png"))?,
         sampler.clone(),
         aa
-    );
+    )?;
     let albedo = load_image(
         f,
-        open_image(path.join("albedo.png")).unwrap(),
+        open_image(path.join("albedo.png"))?,
         sampler.clone(),
         aa
-    );
+    )?;
     let metalness = load_image(
         f,
-        open_image(path.join("metalness.png")).unwrap(),
+        open_image(path.join("metalness.png"))?,
         sampler.clone(),
         aa
-    );
+    )?;
     let roughness = load_image(
         f,
-        open_image(path.join("roughness.png")).unwrap(),
+        open_image(path.join("roughness.png"))?,
         sampler.clone(),
         aa
-    );
-    load_wavefront(
-        &Obj::load(&path.join("model.obj")).unwrap()
+    )?;
+    Ok(load_wavefront(
+        &Obj::load(&path.join("model.obj"))?
     ).compute_tan()
     .with_material(PbrMaterial {
         normal: normal,
         albedo: albedo,
         metalness: metalness,
         roughness: roughness,
-    }).build(f)
+    }).build(f))
 }

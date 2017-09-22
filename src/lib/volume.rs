@@ -38,14 +38,38 @@ impl Intersection for SphereHit {
 impl Volume for Sphere {
     type Hit = SphereHit;
     fn intersects(&self, ray: Ray) -> Option<SphereHit> {
-        let r = ray.direction.cross(self.center-ray.origin).magnitude();
-        if r < self.radius {
-            let d = (r.powi(2) + (self.center-ray.origin).magnitude().powi(2) ).sqrt();
-            let s = (r.powi(2) + self.radius.powi(2)).sqrt();
-            let intersectDistance = d - s;
-            let intersectPoint = ray.origin + (ray.direction * intersectDistance);
-
-            unimplemented!();
-        } else { None }
+        let vpc = self.center - ray.origin;
+        let rad2 = self.radius * self.radius;
+        if vpc.dot(ray.direction) < 0. { // when the sphere is behind the origin p
+            let mag2 = vpc.magnitude2();
+            if mag2 > rad2 { // no intersection
+                None
+            } else { // occurs when p is inside the sphere
+                Some(SphereHit {
+                    distance: 0.,
+                    location: ray.origin,
+                })
+            }
+        } else {
+            let magpc = ray.direction.dot(self.center - ray.origin); // length of ray to closest point to center
+            let pc = ray.origin + magpc * ray.direction; // projection of center onto ray
+            let closest2 = (self.center - pc).magnitude2();
+	        if closest2 > rad2 { // there is no intersection
+                None
+            } else {
+      		    if vpc.magnitude2() > rad2 { // origin is outside sphere
+                    let dist = magpc - (rad2 - closest2).sqrt();
+                    Some(SphereHit {
+                        distance: dist,
+                        location: ray.origin + ray.direction * dist,
+                    })
+                } else { // origin is inside sphere
+			        Some(SphereHit {
+                        distance: 0.,
+                        location: ray.origin,
+                    })
+                }
+            }
+        }
     }
 }

@@ -1,43 +1,52 @@
 use std::fs::File;
 use std::path::Path;
 use std::io::prelude::*;
+use ::lib::Error;
 
 macro_rules! shader {
     ($name:ident { $($x:tt)+ }) => (pub fn $name<R: gfx::Resources, F: gfx::Factory<R>>(factory: &mut F) 
-        -> Result<gfx::ShaderSet<R>, gfx::shade::core::CreateShaderError> {
+        -> Result<gfx::ShaderSet<R>, Error> {
         Ok(shader_set!(factory, $($x)+))
+    })
+}
+
+macro_rules! single_shader {
+    ($f:ident, $c:ident, $s:expr) => ({
+        let name = $s.name.clone();
+        $f.$c(&$s.build().into_bytes())
+            .map_err(move |e| (e, name))?
     })
 }
 
 macro_rules! shader_set {
     ($f:ident, vertex: $v:expr, fragment: $p:expr $(,)*) => ({
-        let v = $v.build().into_bytes();
-        let p = $p.build().into_bytes();
+        let v = $v;
+        let p = $p;
         gfx::ShaderSet::Simple(
-            $f.create_shader_vertex(&v)?,
-            $f.create_shader_pixel(&p)?,
+            single_shader!($f, create_shader_vertex, v),
+            single_shader!($f, create_shader_pixel, p),
         )
     });
     ($f:ident, vertex: $v:expr, geometry: $g:expr, fragment: $p:expr $(,)*) => ({
-        let v = $v.build().into_bytes();
-        let g = $g.build().into_bytes();
-        let p = $p.build().into_bytes();
+        let v = $v;
+        let g = $g;
+        let p = $p;
         gfx::ShaderSet::Geometry(
-            $f.create_shader_vertex(&v)?,
-            $f.create_shader_geometry(&v)?,
-            $f.create_shader_pixel(&p)?,
+            single_shader!($f, create_shader_vertex, v),
+            single_shader!($f, create_shader_geometry, g),
+            single_shader!($f, create_shader_pixel, p),
         )
     });
     ($f:ident, vertex: $v:expr, tessellation_control: $h:expr, tessellation_evaluation: $d:expr, fragment: $p:expr $(,)*) => ({
-        let v = $v.build().into_bytes();
-        let h = $h.build().into_bytes();
-        let d = $d.build().into_bytes();
-        let p = $p.build().into_bytes();
+        let v = $v;
+        let h = $h;
+        let d = $d;
+        let p = $p;
         gfx::ShaderSet::Tessellated(
-            $f.create_shader_vertex(&v)?,
-            $f.create_shader_hull(&h)?,
-            $f.create_shader_domain(&d)?,
-            $f.create_shader_pixel(&p)?,
+            single_shader!($f, create_shader_vertex, v),
+            single_shader!($f, create_shader_hull, h),
+            single_shader!($f, create_shader_domain, d),
+            single_shader!($f, create_shader_pixel, p),
         )
     });
 }
@@ -45,24 +54,21 @@ macro_rules! shader_set {
 pub struct BuildShader {
     prefix: String,
     source: String,
-    name: Option<String>,
+    pub name: String,
 }
 
-pub fn file(fname: &str) -> BuildShader {
-    let path = Path::new(fname);
+pub fn file<P: AsRef<Path>>(path: P) -> Result<BuildShader, Error> {
+    let path = path.as_ref();
     let mut build = BuildShader {
         prefix: String::new(),
         source: String::new(),
-        name: match path.file_name() {
-            Some(v) => v.to_str().map(|v| v.to_owned()),
-            None => None,
-        },
+        name: format!("{}", path.display()),
     };
     File::open(path)
-        .expect(&("Shader \"".to_owned() + fname + "\" not found"))
+        .map_err(|e| (e, path.display()))?
         .read_to_string(&mut build.source)
-        .unwrap();
-    build
+        .map_err(|e| (e, path.display()))?;
+    Ok(build)
 }
 
 impl BuildShader {
@@ -78,22 +84,10 @@ impl BuildShader {
         self
     }
 
-    pub fn vals<'a, M>(mut self, vals: M) -> BuildShader
-        where M: IntoIterator<Item = &'a (&'static str, Option<String>)>
-    {
-        for &(ref n, ref v) in vals {
-            self = match *v {
-                Some(ref v) => self.define_to(n, v),
-                None => self.define(n),
-            };
-        }
-        self
-    }
-
     pub fn build(self) -> String {
         if self.source.starts_with("#version") {
             let (ver, src) = self.source.split_at(self.source.find('\n').unwrap_or(self.source.len()));
-            format!("{}\n{}#line 2\n{}", ver, self.prefix, src)
+            format!("{}\n{}#line 1\n{}", ver, self.prefix, src)
         } else {
             format!("{}#line 1\n{}", self.prefix, self.source)
         }

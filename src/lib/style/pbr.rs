@@ -8,7 +8,7 @@ use gfx::format::*;
 use super::{StyleInputs, Style};
 use super::shaders::file;
 use lib::mesh::{Primitive, VertNTT};
-use lib::{TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
+use lib::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
 
 pub const LIGHT_COUNT: usize = 4;
 
@@ -40,11 +40,11 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")
+    vertex: file("shaders/transform.v.glsl")?
         .define("NORM")
         .define("TEX")
         .define("TAN"),
-    fragment: file("shaders/pbr.f.glsl")
+    fragment: file("shaders/pbr.f.glsl")?
         .define_to("I_POS", "v_pos")
         .define_to("I_NORM", "v_norm")
         .define_to("I_TEX", "v_tex")
@@ -95,29 +95,29 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
     type Inputs = PbrInputs<R>;
     type Material = PbrMaterial<R>;
 
-    fn new<F: Factory<R> + FactoryExt<R>>(
+    fn new<F: Factory<R> + FactoryExt<R>> (
         f: &mut F,
         i: &mut PbrInputs<R>,
         p: Primitive,
         r: Rasterizer,
-    ) -> Self {
-        PbrStyle {
-            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new()).unwrap(),
-        }
+    ) -> Result<Self, Error> {
+        Ok(PbrStyle {
+            pso: f.create_pipeline_state(&i.shaders, p, r, pl::new())?,
+        })
     }
 
     fn init<F: Factory<R>>(
         f: &mut F,
-    ) -> PbrInputs<R> {
-        PbrInputs {
-            shaders: shader(f).unwrap(),
+    ) -> Result<PbrInputs<R>, Error> {
+        Ok(PbrInputs {
+            shaders: shader(f)?,
             transform: None,
             transform_block: f.create_constant_buffer(1),
             params: Some(PbrBlock { ambient: [0.; 4] }),
             params_block: f.create_constant_buffer(1),
             lights: Some([Light::default(); 4]),
             lights_block: f.create_constant_buffer(LIGHT_COUNT),
-        }
+        })
     }
     
     fn draw_raw<C>(
@@ -131,13 +131,14 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
         buf: Buffer<R, Self::Vertex>,
         mat: &PbrMaterial<R>,
     )
+        -> Result<(), Error>
         where C: CommandBuffer<R>
     {
         if let Some(t) = inputs.transform.take() { 
             enc.update_constant_buffer(&inputs.transform_block, &t);
         }
         if let Some(l) = inputs.lights.take() {
-            enc.update_buffer(&inputs.lights_block, &l, 0).unwrap();
+            enc.update_buffer(&inputs.lights_block, &l, 0)?;
         }
         if let Some(p) = inputs.params.take() {
             enc.update_constant_buffer(&inputs.params_block, &p);
@@ -155,5 +156,6 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
             metalness: mat.metalness.clone().into_tuple(),
             roughness: mat.roughness.clone().into_tuple(),
         });
+        Ok(())
     }
 }

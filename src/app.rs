@@ -1,11 +1,11 @@
 use std::path::Path;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
-use webvr::{VRDisplayData, VRFrameData, VRPose, VRGamepadPtr};
+use webvr::{VRDisplayData, VRPose, VRGamepadPtr};
 use cgmath::prelude::*;
 use cgmath::*;
 
-use lib::{Texture, Light, PbrMesh};
+use lib::{Texture, Light, PbrMesh, Error};
 use lib::mesh::*;
 use lib::context::DrawContext;
 use lib::load;
@@ -69,34 +69,35 @@ fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
     }
 }
 
-fn load_my_simple_object<P, R, F>(f: &mut F, path: P) -> Mesh<R, VertNTT, PbrMaterial<R>> 
+fn load_my_simple_object<P, R, F>(f: &mut F, path: P)
+    -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
     where P: AsRef<Path>, R: gfx::Resources, F: gfx::Factory<R>
 {
     use gfx::format::*;
-    load::load_wavefront(
-        &::wavefront::Obj::load(path.as_ref()).unwrap()
+    Ok(load::load_wavefront(
+        &::wavefront::Obj::load(path.as_ref())?
     ).compute_tan().with_material(PbrMaterial {
-        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF]),
-        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0xA0, 0xA0, 0xA0, 0xFF]),
-        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00),
-        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20),
-    }).build(f)
+        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF])?,
+        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0xA0, 0xA0, 0xA0, 0xFF])?,
+        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00)?,
+        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20)?,
+    }).build(f))
 }
 
 impl<R: gfx::Resources> App<R> {
-    pub fn new<F: Factory<R> + FactoryExt<R>>(factory: &mut F) -> Self {
+    pub fn new<F: Factory<R> + FactoryExt<R>>(factory: &mut F) -> Result<Self, Error> {
         // Setup stylers
-        let mut solid = Styler::new(factory);
-        solid.setup(factory, Primitive::LineList);
-        solid.setup(factory, Primitive::TriangleList);
+        let mut solid = Styler::new(factory)?;
+        solid.setup(factory, Primitive::LineList)?;
+        solid.setup(factory, Primitive::TriangleList)?;
 
-        let mut unishade: Styler<_, UnishadeStyle<_>> = Styler::new(factory);
-        unishade.setup(factory, Primitive::LineList);
-        unishade.setup(factory, Primitive::TriangleList);
+        let mut unishade: Styler<_, UnishadeStyle<_>> = Styler::new(factory)?;
+        unishade.setup(factory, Primitive::LineList)?;
+        unishade.setup(factory, Primitive::TriangleList)?;
         unishade.cfg(|s| s.colors([0.184, 0.310, 0.310, 1.0], [0.467, 0.533, 0.600, 1.0]));
 
-        let mut pbr: Styler<_, PbrStyle<_>> = Styler::new(factory);
-        pbr.setup(factory, Primitive::TriangleList);
+        let mut pbr: Styler<_, PbrStyle<_>> = Styler::new(factory)?;
+        pbr.setup(factory, Primitive::TriangleList)?;
         pbr.cfg(|s| {
             s.ambient(BACKGROUND);
             s.lights(&[
@@ -116,16 +117,16 @@ impl<R: gfx::Resources> App<R> {
         });
 
         // Construct App
-        App {
+        Ok(App {
             gamepads: vec![],
             solid: solid,
             unishade: unishade,
             pbr: pbr,
             grid: grid_lines(8, 10.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
-            controller: load_my_simple_object(factory, "assets/controller.obj"),
-            teapot: load::load_object(factory, "assets/teapot_wood/")
-        }
+            controller: load_my_simple_object(factory, "assets/controller.obj")?,
+            teapot: load::load_object(factory, "assets/teapot_wood/")?,
+        })
     }
 
     pub fn set_gamepads(&mut self, g: Vec<VRGamepadPtr>) {
@@ -136,7 +137,6 @@ impl<R: gfx::Resources> App<R> {
         &self,
         ctx: &mut DrawContext<R, C>,
         display: &VRDisplayData,
-        frame: &VRFrameData,
     ) {
         // Get stage transform thing
         let stage = if let Some(ref stage) = display.stage_parameters {
