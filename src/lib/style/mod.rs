@@ -2,7 +2,6 @@ use gfx::{Resources, Encoder, Primitive, Rect, CommandBuffer, Slice, ShaderSet, 
 use gfx::handle::Buffer;
 use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
-use cgmath::prelude::*;
 use cgmath::Matrix4;
 use fnv::FnvHashMap;
 use std::cell::RefCell;
