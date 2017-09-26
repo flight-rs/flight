@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::time::Instant;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
 use webvr::{VRDisplayData, VRPose, VRGamepadPtr};
@@ -24,6 +25,7 @@ pub struct App<R: gfx::Resources> {
     controller_grid: Mesh<R, VertC, ()>,
     controller: PbrMesh<R>,
     teapot: PbrMesh<R>,
+    start_time: Instant,
 }
 
 pub fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
@@ -61,6 +63,21 @@ fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
             lines.push(VertC { pos: [a, b, rad], color: line_color[2] });
         }
     }
+
+    let frac = 0.125 * mult;
+    lines.push(VertC { pos: [rad - frac, 0., -frac], color: [1., 0., 0.] });
+    lines.push(VertC { pos: [rad - frac, 0.,  frac], color: [1., 0., 0.] });
+    lines.push(VertC { pos: [rad - frac, -frac, 0.], color: [1., 0., 0.] });
+    lines.push(VertC { pos: [rad - frac,  frac, 0.], color: [1., 0., 0.] });
+    lines.push(VertC { pos: [0., rad - frac, -frac], color: [0., 1., 0.] });
+    lines.push(VertC { pos: [0., rad - frac,  frac], color: [0., 1., 0.] });
+    lines.push(VertC { pos: [-frac, rad - frac, 0.], color: [0., 1., 0.] });
+    lines.push(VertC { pos: [ frac, rad - frac, 0.], color: [0., 1., 0.] });
+    lines.push(VertC { pos: [-frac, 0., rad - frac], color: [0., 0., 1.] });
+    lines.push(VertC { pos: [ frac, 0., rad - frac], color: [0., 0., 1.] });
+    lines.push(VertC { pos: [0., -frac, rad - frac], color: [0., 0., 1.] });
+    lines.push(VertC { pos: [0.,  frac, rad - frac], color: [0., 0., 1.] });
+
     MeshSource {
         verts: lines,
         inds: Indexing::All,
@@ -77,11 +94,11 @@ fn load_my_simple_object<P, R, F>(f: &mut F, path: P)
     Ok(load::load_wavefront(
         &::wavefront::Obj::load(path.as_ref())?
     ).compute_tan().with_material(PbrMaterial {
-        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF])?,
-        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0xA0, 0xA0, 0xA0, 0xFF])?,
-        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00)?,
-        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20)?,
-    }).build(f))
+        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF]),
+        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0x60, 0x60, 0x60, 0xFF]),
+        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00),
+        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20),
+    }).build(f)
 }
 
 impl<R: gfx::Resources> App<R> {
@@ -124,9 +141,10 @@ impl<R: gfx::Resources> App<R> {
             pbr: pbr,
             grid: grid_lines(8, 10.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
-            controller: load_my_simple_object(factory, "assets/controller.obj")?,
-            teapot: load::load_object(factory, "assets/teapot_wood/")?,
-        })
+            controller: load_my_simple_object(factory, "assets/controller.obj"),
+            teapot: load::load_object(factory, "assets/teapot_wood/"),
+            start_time: Instant::now(),
+        }
     }
 
     pub fn set_gamepads(&mut self, g: Vec<VRGamepadPtr>) {
@@ -138,6 +156,9 @@ impl<R: gfx::Resources> App<R> {
         ctx: &mut DrawContext<R, C>,
         display: &VRDisplayData,
     ) {
+        let elapsed = self.start_time.elapsed();
+        let t = elapsed.as_secs() as f32 + (elapsed.subsec_nanos() as f32 * 1e-9);
+
         // Get stage transform thing
         let stage = if let Some(ref stage) = display.stage_parameters {
             <&Matrix4<f32>>::from(&stage.sitting_to_standing_transform).inverse_transform().unwrap()
@@ -155,8 +176,8 @@ impl<R: gfx::Resources> App<R> {
         // Draw teapot
         self.pbr.draw(ctx, stage * Matrix4::from(Decomposed {	
             scale: 1.,		
-            rot: Quaternion::from(Euler::new(Deg(0.), Deg(0.), Deg(0.))),		
-            disp: Vector3::new(3., 1., 3.),		
+            rot: Quaternion::from(Euler::new(Deg((t * 0.7).sin() * 15.), Deg(t * 60.), Deg((t * 0.8).cos() * 15.))),		
+            disp: Vector3::new(1., 0., 1.),		
         }), &self.teapot);
 
         // Draw controllers
