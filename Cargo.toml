@@ -1,5 +1,5 @@
 [package]
-name = "vr-intro"
+name = "flight"
 version = "0.1.0"
 authors = [
     "Sumner Evans <jonathanevans@mines.edu>",
@@ -8,15 +8,21 @@ authors = [
 ]
 
 [dependencies]
-rust-webvr = "*"
-cgmath = "*"
-gfx = "*"
+cgmath = "^0.15.0"
+gfx = "^0.16.1"
+log = "^0.3.8"
+obj = "^0.8.0"
+fnv = "^1.0.5"
+image = "^0.15.0"
+
+[dev-dependencies]
 clap = "*"
-log = "*"
+rust-webvr = "*"
 simplelog = "*"
 glutin = "*"
 gfx_window_glutin = "*"
 gfx_device_gl = "*"
-obj = "*"
-fnv = "*"
-image = "*"
+
+[[example]]
+name = "intro"
+path = "examples/intro/main.rs"

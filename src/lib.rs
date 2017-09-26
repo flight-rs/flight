@@ -1,3 +1,13 @@
+// Crates
+#[macro_use]
+extern crate log;
+#[macro_use]
+extern crate gfx;
+extern crate cgmath;
+extern crate obj as wavefront;
+extern crate fnv;
+extern crate image;
+
 pub mod style;
 pub mod load;
 pub mod mesh;
@@ -8,7 +18,6 @@ pub mod volume;
 mod error;
 pub use self::error::*;
 
-use gfx;
 use gfx::shade::core::CreateShaderError;
 use gfx::handle::*;
 use gfx::format::*;

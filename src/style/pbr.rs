@@ -7,8 +7,8 @@ use gfx::format::*;
 
 use super::{StyleInputs, Style};
 use super::shaders::file;
-use lib::mesh::{Primitive, VertNTT};
-use lib::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
+use ::mesh::{Primitive, VertNTT};
+use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
 
 pub const LIGHT_COUNT: usize = 4;
 

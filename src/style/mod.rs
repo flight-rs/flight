@@ -6,9 +6,9 @@ use cgmath::Matrix4;
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
-use lib::{TransformBlock, DepthRef, TargetRef, Error};
-use lib::context::*;
-use lib::mesh::{Mesh, Vertex};
+use ::{TransformBlock, DepthRef, TargetRef, Error};
+use ::context::*;
+use ::mesh::{Mesh, Vertex};
 
 #[macro_use]
 mod shaders;

@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use std::path::Path;
 
-use super::{Error, Texture};
-use super::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
-use super::style::PbrMaterial;
+use ::{Error, Texture};
+use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
+use ::style::PbrMaterial;
 
 // TODO: Result instead of default or panic
 pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {

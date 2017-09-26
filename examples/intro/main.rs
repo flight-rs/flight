@@ -4,15 +4,13 @@ extern crate log;
 extern crate rust_webvr as webvr;
 extern crate clap;
 extern crate simplelog;
-#[macro_use]
+extern crate flight as lib;
 extern crate gfx;
+extern crate cgmath;
+extern crate glutin;
 extern crate gfx_device_gl;
 extern crate gfx_window_glutin;
-extern crate glutin;
-extern crate cgmath;
 extern crate obj as wavefront;
-extern crate fnv;
-extern crate image;
 
 use webvr::{VRServiceManager, VRLayer, VRFramebufferAttributes};
 use simplelog::{Config, TermLogger, LogLevelFilter};
@@ -26,7 +24,6 @@ use cgmath::prelude::*;
 use cgmath::Matrix4;
 
 mod app;
-pub mod lib;
 
 use lib::context;
 

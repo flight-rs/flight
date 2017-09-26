@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::path::Path;
 use std::io::prelude::*;
-use ::lib::Error;
+use ::Error;
 
 macro_rules! shader {
     ($name:ident { $($x:tt)+ }) => (pub fn $name<R: gfx::Resources, F: gfx::Factory<R>>(factory: &mut F) 

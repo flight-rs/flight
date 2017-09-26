@@ -1,7 +1,7 @@
 use gfx::{Rect, Encoder, Resources, CommandBuffer};
 use cgmath::Matrix4;
 
-use super::{DepthRef, TargetRef};
+use ::{DepthRef, TargetRef};
 
 #[derive(Copy, Clone)]
 pub struct EyeContext {
