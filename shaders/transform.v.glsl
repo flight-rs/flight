@@ -5,7 +5,7 @@ layout(std140) uniform transform {
     mat4 view;
     mat4 proj;
     vec4 eye_pos;
-    float xoffset;
+    float clip_offset;
 };
 
 in vec3 a_pos;
@@ -59,7 +59,7 @@ void main() {
     // Fake an opengl viewport
     // TODO: Submit a PR to GFX
     c.x /= 2 * c.w;
-    c.x += xoffset;
+    c.x += clip_offset;
     c.x *= c.w;
     gl_Position = c;
 }

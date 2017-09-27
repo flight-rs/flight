@@ -67,7 +67,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 view: ctx.left.view.into(),
                 proj: ctx.left.proj.into(),
                 eye: get_eye(&ctx.left.view),
-                xoffset: ctx.left.xoffset,
+                clip_offset: ctx.left.clip_offset,
             };
             inputs.transform(trans.clone());
             sty.draw_raw(
@@ -84,7 +84,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
             trans.view = ctx.right.view.into();
             trans.proj = ctx.right.proj.into();
             trans.eye = get_eye(&ctx.right.view);
-            trans.xoffset = ctx.right.xoffset;
+            trans.clip_offset = ctx.right.clip_offset;
             inputs.transform(trans);
             sty.draw_raw(
                 &mut *inputs,

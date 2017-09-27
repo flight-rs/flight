@@ -7,12 +7,14 @@ extern crate cgmath;
 extern crate obj as wavefront;
 extern crate fnv;
 extern crate image;
+extern crate rust_webvr as webvr;
 
 pub mod style;
 pub mod load;
 pub mod mesh;
 pub mod context;
 pub mod volume;
+pub mod vr;
 
 #[macro_use]
 mod error;
@@ -36,7 +38,7 @@ gfx_defines!{
         view: [[f32; 4]; 4] = "view",
         proj: [[f32; 4]; 4] = "proj",
         eye: [f32; 4] = "eye_pos",
-        xoffset: f32 = "xoffset",
+        clip_offset: f32 = "clip_offset",
     }
 
     constant Light {

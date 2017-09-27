@@ -6,7 +6,7 @@ use gfx::format;
 use gfx::texture::{Kind, AaMode};
 use gfx::handle;
 
-use std::collections::HashMap;
+use fnv::FnvHashMap;
 use std::ops::Deref;
 use std::path::Path;
 
@@ -14,10 +14,9 @@ use ::{Error, Texture};
 use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
 use ::style::PbrMaterial;
 
-// TODO: Result instead of default or panic
-pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {
+pub fn wavefront_data(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>, Error> {
     let mut verts = Vec::new();
-    let mut ind_look = HashMap::new();
+    let mut ind_look = FnvHashMap::default();
     let mut inds = Vec::new();
     for p in obj.objects.iter().flat_map(|g| &g.groups).flat_map(|g| &g.polys) {
         let poly = p.iter().map(|i| *ind_look.entry((i.0, i.1, i.2)).or_insert_with(|| {
@@ -30,15 +29,19 @@ pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> MeshSource<VertNT, ()> {
         }));
         inds.extend(poly);
     }
-    MeshSource {
+    Ok(MeshSource {
         verts: verts,
         inds: Indexing::Inds(inds),
         prim: Primitive::TriangleList,
         mat: (),
-    }
+    })
 }
 
-pub fn load_image<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
+pub fn wavefront_file<P: AsRef<Path>>(path: P) -> Result<MeshSource<VertNT, ()>, Error> {
+    wavefront_data(&Obj::load(path.as_ref())?)
+}
+
+pub fn image_data<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
     -> Result<Texture<R, T>, Error>
     where 
         R: gfx::Resources,
@@ -94,7 +97,7 @@ impl ImageData for u8 {
     }
 }
 
-pub fn load_object<R, F, P>(f: &mut F, path: P)
+pub fn object_directory<R, F, P>(f: &mut F, path: P)
     -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
     where
         R: gfx::Resources,
@@ -108,33 +111,32 @@ pub fn load_object<R, F, P>(f: &mut F, path: P)
 
     let sampler = f.create_sampler(SamplerInfo::new(FilterMethod::Bilinear, WrapMode::Tile));
 
-    let normal = load_image(
+    let normal = image_data(
         f,
         open_image(path.join("normal.png"))?,
         sampler.clone(),
         aa
     )?;
-    let albedo = load_image(
+    let albedo = image_data(
         f,
         open_image(path.join("albedo.png"))?,
         sampler.clone(),
         aa
     )?;
-    let metalness = load_image(
+    let metalness = image_data(
         f,
         open_image(path.join("metalness.png"))?,
         sampler.clone(),
         aa
     )?;
-    let roughness = load_image(
+    let roughness = image_data(
         f,
         open_image(path.join("roughness.png"))?,
         sampler.clone(),
         aa
     )?;
-    Ok(load_wavefront(
-        &Obj::load(&path.join("model.obj"))?
-    ).compute_tan()
+    Ok(wavefront_file(path.join("model.obj"))?
+    .compute_tan()
     .with_material(PbrMaterial {
         normal: normal,
         albedo: albedo,

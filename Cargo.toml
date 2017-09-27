@@ -14,10 +14,10 @@ log = "^0.3.8"
 obj = "^0.8.0"
 fnv = "^1.0.5"
 image = "^0.15.0"
+rust-webvr = "^0.8.1"
 
 [dev-dependencies]
 clap = "*"
-rust-webvr = "*"
 simplelog = "*"
 glutin = "*"
 gfx_window_glutin = "*"
