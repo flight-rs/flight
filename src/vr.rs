@@ -1,7 +1,6 @@
 use cgmath::prelude::*;
 use cgmath::*;
 use webvr::*;
-use volume::Ray;
 use context::EyeContext;
 use fnv::FnvHashMap;
 use gfx::{Rect};
@@ -56,7 +55,7 @@ impl VrContext {
     }
 
     pub fn set_texture(&mut self, texture_id: u32) {
-        info!("Attaching texture to HMD: {}", texture_id);
+        info!("Attaching texture {} to HMD", texture_id);
         self.layer.texture_id = texture_id;
     }
 
@@ -217,17 +216,11 @@ pub type ControllerButton = VRGamepadButton;
 pub trait Trackable {
     fn pose(&self) -> Matrix4<f32>;
 
-    fn ray(&self) -> Ray {
-        Ray {
-            origin: self.origin().cast(),
-            direction: self.z_dir().cast(),
-        }
-    }
-
     fn x_dir(&self) -> Vector3<f32> { self.pose().x.truncate() }
     fn y_dir(&self) -> Vector3<f32> { self.pose().y.truncate() }
     fn z_dir(&self) -> Vector3<f32> { self.pose().z.truncate() }
     fn origin(&self) -> Point3<f32> { Point3::from_vec(self.pose().w.truncate()) }
+    fn pointing(&self) -> Vector3<f32> { -self.z_dir() }
 }
 
 #[derive(Clone)]

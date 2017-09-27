@@ -5,7 +5,6 @@ use gfx::handle::Buffer;
 use gfx::state::Rasterizer;
 
 use super::{StyleInputs, Style};
-use super::shaders::file;
 use ::mesh::{Primitive, VertC};
 use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
 
@@ -20,9 +19,9 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")?
+    vertex: static_file!("shaders/transform.v.glsl")
         .define("COLOR"),
-    fragment: file("shaders/simple.f.glsl")?
+    fragment: static_file!("shaders/simple.f.glsl")
         .define_to("I_POS", "v_pos")
         .define_to("I_COLOR", "v_color")
 });

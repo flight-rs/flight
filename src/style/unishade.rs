@@ -5,7 +5,6 @@ use gfx::handle::Buffer;
 use gfx::state::Rasterizer;
 
 use super::{StyleInputs, Style};
-use super::shaders::file;
 use ::mesh::{Primitive, VertN};
 use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
 
@@ -26,9 +25,9 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")?
+    vertex: static_file!("shaders/transform.v.glsl")
         .define("NORM"),
-    fragment: file("shaders/unishade.f.glsl")?
+    fragment: static_file!("shaders/unishade.f.glsl")
         .define_to("I_POS", "v_pos")
         .define_to("I_NORM", "v_norm")
 });

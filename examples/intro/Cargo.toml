@@ -1,0 +1,19 @@
+[package]
+name = "flight-intro"
+version = "0.1.0"
+authors = [
+    "Sumner Evans <jonathanevans@mines.edu>",
+    "Sam Sartor <ssartor@mines.edu>",
+    "Robbie Merillat <rdmerillat@mines.edu>",
+]
+
+[dependencies]
+flight = { path = "../.." }
+clap = "*"
+simplelog = "*"
+glutin = "*"
+gfx_window_glutin = "*"
+gfx_device_gl = "*"
+cgmath = "*"
+gfx = "*"
+log = "*"

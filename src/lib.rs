@@ -13,7 +13,6 @@ pub mod style;
 pub mod load;
 pub mod mesh;
 pub mod context;
-pub mod volume;
 pub mod vr;
 
 #[macro_use]

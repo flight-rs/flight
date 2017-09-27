@@ -3,6 +3,10 @@ use std::path::Path;
 use std::io::prelude::*;
 use ::Error;
 
+macro_rules! static_file {
+    ($p:expr) => ( ::style::shaders::source($p, include_str!($p)) )
+}
+
 macro_rules! shader {
     ($name:ident { $($x:tt)+ }) => (pub fn $name<R: gfx::Resources, F: gfx::Factory<R>>(factory: &mut F) 
         -> Result<gfx::ShaderSet<R>, Error> {
@@ -69,6 +73,14 @@ pub fn file<P: AsRef<Path>>(path: P) -> Result<BuildShader, Error> {
         .read_to_string(&mut build.source)
         .map_err(|e| (e, path.display()))?;
     Ok(build)
+}
+
+pub fn source(name: &str, source: &str) -> BuildShader {
+    BuildShader {
+        prefix: String::new(),
+        source: source.to_owned(),
+        name: name.to_owned(),
+    }
 }
 
 impl BuildShader {

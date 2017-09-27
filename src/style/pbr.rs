@@ -6,7 +6,6 @@ use gfx::state::Rasterizer;
 use gfx::format::*;
 
 use super::{StyleInputs, Style};
-use super::shaders::file;
 use ::mesh::{Primitive, VertNTT};
 use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
 
@@ -40,11 +39,11 @@ gfx_defines!{
 }
 
 shader!(shader {
-    vertex: file("shaders/transform.v.glsl")?
+    vertex: static_file!("shaders/transform.v.glsl")
         .define("NORM")
         .define("TEX")
         .define("TAN"),
-    fragment: file("shaders/pbr.f.glsl")?
+    fragment: static_file!("shaders/pbr.f.glsl")
         .define_to("I_POS", "v_pos")
         .define_to("I_NORM", "v_norm")
         .define_to("I_TEX", "v_tex")

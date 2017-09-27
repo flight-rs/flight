@@ -16,13 +16,5 @@ fnv = "^1.0.5"
 image = "^0.15.0"
 rust-webvr = "^0.8.1"
 
-[dev-dependencies]
-clap = "*"
-simplelog = "*"
-glutin = "*"
-gfx_window_glutin = "*"
-gfx_device_gl = "*"
-
-[[example]]
-name = "intro"
-path = "examples/intro/main.rs"
+[workspace]
+members = ["examples/intro"]
