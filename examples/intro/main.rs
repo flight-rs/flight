@@ -117,6 +117,7 @@ fn main() {
         };
 
         // Update context
+        running = !vrm.exit;
         ctx.left = hmd.left;
         ctx.right = hmd.right;
 

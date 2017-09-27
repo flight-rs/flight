@@ -2,7 +2,7 @@ use gfx::{Resources, Encoder, Primitive, Rect, CommandBuffer, Slice, ShaderSet, 
 use gfx::handle::Buffer;
 use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
-use cgmath::Matrix4;
+use cgmath::{Matrix4};
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
@@ -25,10 +25,6 @@ pub use self::pbr::{PbrStyle, PbrBlock, PbrMaterial, PbrInputs};
 pub struct Styler<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
     map: FnvHashMap<Primitive, E>,
-}
-
-fn get_eye(m: &Matrix4<f32>) -> [f32; 4] {
-    [-m.w.x, -m.w.y, -m.w.z, 1.]
 }
 
 impl<R: Resources, E: Style<R>> Styler<R, E> {
@@ -63,10 +59,10 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         if let Some(ref sty) = self.map.get(&mesh.prim) {
             let mut inputs = self.inputs.borrow_mut();
             let mut trans = TransformBlock {
+                eye: ctx.left.eye.to_homogeneous().into(),
                 model: model.into(),
                 view: ctx.left.view.into(),
                 proj: ctx.left.proj.into(),
-                eye: get_eye(&ctx.left.view),
                 clip_offset: ctx.left.clip_offset,
             };
             inputs.transform(trans.clone());
@@ -81,9 +77,9 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 &mesh.mat,
             )?;
 
+            trans.eye = ctx.right.eye.to_homogeneous().into();
             trans.view = ctx.right.view.into();
             trans.proj = ctx.right.proj.into();
-            trans.eye = get_eye(&ctx.right.view);
             trans.clip_offset = ctx.right.clip_offset;
             inputs.transform(trans);
             sty.draw_raw(

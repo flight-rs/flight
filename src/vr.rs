@@ -12,6 +12,8 @@ pub struct VrContext {
     pub near: f64,
     pub far: f64,
     layer: VRLayer,
+    exit: bool,
+    paused: bool,
 }
 
 fn size_from_data(data: &VRDisplayData) -> (u32, u32) {
@@ -36,6 +38,8 @@ impl VrContext {
             near: 0.1,
             far: 100.0,
             layer: Default::default(),
+            exit: false,
+            paused: false,
         })
     }
 
@@ -75,6 +79,15 @@ impl VrContext {
     }
 
     pub fn sync(&mut self) -> VrMoment {
+        for event in self.vrsm.poll_events() {
+            match event {
+                VREvent::Display(VRDisplayEvent::Pause(_)) => self.paused = true,
+                VREvent::Display(VRDisplayEvent::Resume(_)) => self.paused = false,
+                VREvent::Display(VRDisplayEvent::Exit(_)) => self.exit = true,
+                _ => (),
+            }
+        }
+
         let mut moment = VrMoment {
             cont: FnvHashMap::default(),
             hmd: None,
@@ -83,6 +96,8 @@ impl VrContext {
             tertiary: None,
             layer: self.layer.clone(),
             stage: Matrix4::zero(),
+            exit: self.exit,
+            paused: self.paused,
         };
         {
             let mut disp = self.disp.borrow_mut();
@@ -97,13 +112,17 @@ impl VrContext {
                 Matrix4::identity()
             };
 
+            let left_view = <&Matrix4<_>>::from(&state.left_view_matrix);
+            let right_view = <&Matrix4<_>>::from(&state.right_view_matrix);
+
             if let (Some(pose), true) = (pose_transform(&state.pose), data.connected) {
                 moment.hmd = Some(Hmd {
                     name: data.display_name.clone(),
                     size: (w, h),
                     pose: pose,
                     left: EyeContext {
-                        view: <&Matrix4<_>>::from(&state.left_view_matrix).clone(),
+                        eye: Point3::from_vec(left_view.invert().unwrap().w.truncate()),
+                        view: left_view.clone(),
                         proj: <&Matrix4<_>>::from(&state.left_projection_matrix).clone(),
                         clip_offset: -0.5,
                         clip: Rect { 
@@ -114,7 +133,8 @@ impl VrContext {
                         },
                     },
                     right: EyeContext {
-                        view: <&Matrix4<_>>::from(&state.right_view_matrix).clone(),
+                        eye: Point3::from_vec(right_view.invert().unwrap().w.truncate()),
+                        view: right_view.clone(),
                         proj: <&Matrix4<_>>::from(&state.right_projection_matrix).clone(),
                         clip_offset: 0.5,
                         clip: Rect { 
@@ -129,23 +149,17 @@ impl VrContext {
         }
         let gamepads =  self.vrsm.get_gamepads();
         {
-            let mut gpiter = gamepads.iter();
-            if let Some(gp) = gpiter.next() {
-                moment.primary = Some(gp.borrow().data().display_id);
-            }
-            if let Some(gp) = gpiter.next() {
-                moment.secondary = Some(gp.borrow().data().display_id);
-            }
-            if let Some(gp) = gpiter.next() {
-                moment.tertiary = Some(gp.borrow().data().display_id);
-            }
+            let mut gpiter = gamepads.iter().map(|gp| gp.borrow().id());
+            moment.primary = gpiter.next();
+            moment.secondary = gpiter.next();
+            moment.tertiary = gpiter.next();
         }
         for gp in gamepads {
             let gp = gp.borrow();
             let data = gp.data();
             let state = gp.state();
             if let Some(pose) = pose_transform(&state.pose) {
-                moment.cont.insert(data.display_id, Controller {
+                moment.cont.insert(gp.id(), Controller {
                     name: data.name.clone(),
                     pose: pose,
                     axes: state.axes.clone(),
@@ -166,18 +180,6 @@ pub enum ControllerRef {
 }
 
 impl ControllerRef {
-    pub fn primary() -> ControllerRef {
-        ControllerRef::Primary
-    }
-
-    pub fn secondary() -> ControllerRef {
-        ControllerRef::Secondary
-    }
-
-    pub fn tertiary() -> ControllerRef {
-        ControllerRef::Tertiary
-    }
-
     fn index(&self, moment: &VrMoment) -> Option<u32> {
         use self::ControllerRef::*;
         match *self {
@@ -196,6 +198,18 @@ impl ControllerRef {
             None => *self,
         }
     }
+}
+
+pub fn primary() -> ControllerRef {
+    ControllerRef::Primary
+}
+
+pub fn secondary() -> ControllerRef {
+    ControllerRef::Secondary
+}
+
+pub fn tertiary() -> ControllerRef {
+    ControllerRef::Tertiary
 }
 
 pub type ControllerButton = VRGamepadButton;
@@ -255,6 +269,8 @@ pub struct VrMoment {
     tertiary: Option<u32>,
     layer: VRLayer,
     pub stage: Matrix4<f32>,
+    pub exit: bool,
+    pub paused: bool,
 }
 
 impl VrMoment {

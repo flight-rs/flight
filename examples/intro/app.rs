@@ -9,7 +9,7 @@ use lib::mesh::*;
 use lib::context::DrawContext;
 use lib::load;
 use lib::style::{Styler, SolidStyle, UnishadeStyle, PbrStyle, PbrMaterial};
-use lib::vr::{VrMoment};
+use lib::vr::{primary, VrMoment};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
@@ -123,7 +123,7 @@ impl<R: gfx::Resources> App<R> {
             solid: solid,
             unishade: unishade,
             pbr: pbr,
-            grid: grid_lines(8, 10.).build(factory),
+            grid: grid_lines(8, 8.).build(factory),
             controller_grid: grid_lines(2, 0.2).build(factory),
             controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
             teapot: load::object_directory(factory, "assets/teapot_wood/")?,
@@ -147,16 +147,25 @@ impl<R: gfx::Resources> App<R> {
         self.solid.draw(ctx, vrm.stage, &self.grid);
 
         // Draw teapot
-        self.pbr.draw(ctx, vrm.stage * Matrix4::from(Decomposed {	
-            scale: 1.,		
-            rot: Quaternion::from(Euler::new(Deg((t * 0.7).sin() * 15.), Deg(t * 60.), Deg((t * 0.8).cos() * 15.))),		
-            disp: Vector3::new(1., 0., 1.),		
-        }), &self.teapot);
+        let tearot = Quaternion::from(Euler::new(Deg((t * 0.7).sin() * 15.), Deg(t * 60.), Deg((t * 0.8).cos() * 15.)));
+        let mat = if let Some(cont) = vrm.controller(primary()) {
+            cont.pose * Matrix4::from(Decomposed {	
+                scale: 0.15 - 0.13 * cont.axes[2] as f32,		
+                rot: tearot,		
+                disp: Vector3::new(0., 0., -0.25),		
+            })
+        } else {
+            vrm.stage * Matrix4::from(Decomposed {	
+                scale: 1.,		
+                rot: tearot,		
+                disp: Vector3::new(1., 0., 1.),		
+            })
+        };
+        self.pbr.draw(ctx, mat, &self.teapot);
 
         // Draw controllers
         for cont in vrm.controllers() {
-            let scale = Matrix4::from_scale(cont.axes[0] as f32 * 2. + 1.);
-            self.solid.draw(ctx, cont.pose * scale, &self.controller_grid);
+            self.solid.draw(ctx, cont.pose, &self.controller_grid);
             self.pbr.draw(ctx, cont.pose, &self.controller);
         }
     }
