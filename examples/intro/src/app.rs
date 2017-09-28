@@ -2,14 +2,14 @@ use std::path::Path;
 use std::time::Instant;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
-use nalgebra::{self as na, Rotation3, SimilarityMatrix3, Translation3, Point3, Vector3};
+use nalgebra::{self as na, Rotation3, SimilarityMatrix3, Translation3, Point3, Point2, Vector3};
 
 use lib::{Texture, Light, PbrMesh, Error};
 use lib::mesh::*;
 use lib::context::DrawContext;
 use lib::load;
 use lib::style::{Styler, SolidStyle, PbrStyle, PbrMaterial};
-use lib::vr::{primary, secondary, VrMoment};
+use lib::vr::{primary, secondary, VrMoment, ViveController};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
@@ -26,7 +26,8 @@ pub struct App<R: gfx::Resources> {
     controller: PbrMesh<R>,
     teapot: PbrMesh<R>,
     start_time: Instant,
-    last_pad: (f32, f32),
+    primary: ViveController,
+    secondary: ViveController,
 }
 
 fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
@@ -108,7 +109,15 @@ impl<R: gfx::Resources> App<R> {
             controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
             teapot: load::object_directory(factory, "assets/teapot_wood/")?,
             start_time: Instant::now(),
-            last_pad: (1., 0.),
+            primary: ViveController {
+                is: primary(),
+                pad: Point2::new(1., 0.),
+                .. Default::default()
+            },
+            secondary: ViveController {
+                is: secondary(),
+                .. Default::default()
+            },
         })
     }
 
@@ -120,15 +129,21 @@ impl<R: gfx::Resources> App<R> {
         let elapsed = self.start_time.elapsed();
         let t = elapsed.as_secs() as f32 + (elapsed.subsec_nanos() as f32 * 1e-9);
 
+        match (self.primary.update(vrm), self.secondary.update(vrm)) {
+            (Ok(_), Ok(_)) => (),
+            _ => warn!("A not vive-like controller is connected"),
+        }
+        
+
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
         ctx.encoder.clear(&ctx.color, [BACKGROUND[0].powf(1. / 2.2), BACKGROUND[1].powf(1. / 2.2), BACKGROUND[2].powf(1. / 2.2), BACKGROUND[3]]);
 
         // Controller light
-        let cont_light = if let Some(cont) = vrm.controller(secondary()) {
+        let cont_light = if self.secondary.connected {
             Light {
-                pos: cont.pose * Point3::new(0., 0., -0.1),
-                color: [0.6, 0.6, 0.6, 10. * cont.axes[2] as f32],
+                pos: self.secondary.pose * Point3::new(0., 0., -0.1),
+                color: [0.6, 0.6, 0.6, 10. * self.secondary.trigger as f32],
             }
         } else {
             Default::default()
@@ -163,14 +178,11 @@ impl<R: gfx::Resources> App<R> {
             * Rotation3::from_axis_angle(&Vector3::z_axis(), (t * 0.8).cos() * 15. * DEG)
             * Rotation3::from_axis_angle(&Vector3::y_axis(), t * 60. * DEG);
 
-        let mat = if let Some(cont) = vrm.controller(primary()) {
-            if cont.axes[0] != 0. {
-                self.last_pad = (cont.axes[0] as f32, cont.axes[1] as f32);
-            }
-            na::convert(cont.pose * SimilarityMatrix3::from_parts(
+        let teamat = if self.primary.connected {
+            na::convert(self.primary.pose * SimilarityMatrix3::from_parts(
                 Translation3::new(0., 0., -0.25),
                 tearot,
-                0.15 * self.last_pad.0.atan2(self.last_pad.1).abs() as f32 / PI,		
+                0.15 * self.primary.pad_theta().abs() as f32 / PI,		
             ))
         } else {
             vrm.stage * SimilarityMatrix3::from_parts(
@@ -179,7 +191,7 @@ impl<R: gfx::Resources> App<R> {
                 1.,
             )
         };
-        self.pbr.draw(ctx, mat, &self.teapot);
+        self.pbr.draw(ctx, teamat, &self.teapot);
 
         // Draw controllers
         for cont in vrm.controllers() {

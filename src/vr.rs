@@ -1,4 +1,4 @@
-use nalgebra::{self as na, Transform3, Vector3, Point3, IsometryMatrix3, Quaternion, Translation3, Unit};
+use nalgebra::{self as na, Transform3, Vector3, Point3, Vector2, Point2, Isometry3, IsometryMatrix3, Quaternion, Translation3, Unit};
 use webvr::*;
 use context::EyeContext;
 use fnv::FnvHashMap;
@@ -121,7 +121,7 @@ impl VrContext {
                 moment.hmd = Some(Hmd {
                     name: data.display_name.clone(),
                     size: (w, h),
-                    pose: pose,
+                    pose: na::convert(pose),
                     left: EyeContext {
                         eye: left_view.try_inverse().unwrap() * Point3::origin(),
                         view: left_view,
@@ -163,7 +163,7 @@ impl VrContext {
             if let Some(pose) = pose_transform(&state.pose) {
                 moment.cont.insert(gp.id(), Controller {
                     name: data.name.clone(),
-                    pose: pose,
+                    pose: na::convert(pose),
                     axes: state.axes.clone(),
                     buttons: state.buttons.clone(),
                 });
@@ -289,10 +289,86 @@ impl VrMoment {
     }
 }
 
-fn pose_transform(ctr: &VRPose) -> Option<IsometryMatrix3<f32>> {
+fn pose_transform(ctr: &VRPose) -> Option<Isometry3<f32>> {
     let or = Unit::new_normalize(Quaternion::advanced(
         match ctr.orientation { Some(o) => o, None => return None }));
     let pos = Translation3::advanced(
         match ctr.position { Some(o) => o, None => return None });
-    Some(IsometryMatrix3::from_parts(pos, na::convert(or)))
+    Some(Isometry3::from_parts(pos, or))
+}
+
+/// A structure for tracking the state of a vive controller
+pub struct ViveController {
+    /// Which controller is connected to this state object
+    pub is: ControllerRef,
+    pub connected: bool,
+    pub pose: IsometryMatrix3<f32>,
+    pub pose_delta: IsometryMatrix3<f32>,
+    pub trigger: f64,
+    pub pad: Point2<f64>,
+    pub pad_delta: Vector2<f64>,
+    pub pad_touched: bool,
+    pub menu: bool,
+    pub grip: bool,
+}
+
+impl Default for ViveController {
+    fn default() -> Self {
+        ViveController {
+            is: primary(),
+            connected: false,
+            pose: na::one(),
+            pose_delta: na::one(),
+            trigger: 0.,
+            pad: Point2::origin(),
+            pad_delta: na::zero(),
+            pad_touched: false,
+            menu: false,
+            grip: false,
+        }
+    }
+}
+
+impl ViveController {
+    pub fn update(&mut self, mom: &VrMoment) -> Result<(), ()> {
+        if let Some(cont) = mom.controller(self.is) {
+            if cont.axes.len() != 3 || cont.buttons.len() != 2 { return Err(()) }
+
+            self.connected = true;
+
+            self.pose_delta = cont.pose * self.pose.inverse();
+            self.pose = cont.pose;
+
+            let (x, y) = (cont.axes[0], cont.axes[1]);
+            if x != 0. || y != 0. {
+                let pad = Point2::new(x, y);
+                self.pad_delta = pad - self.pad;
+                self.pad = pad;
+                self.pad_touched = true;
+            } else { 
+                self.pad_touched = false;
+            }
+
+            self.trigger = cont.axes[2];
+            self.menu = cont.buttons[0].pressed;
+            self.grip = cont.buttons[1].pressed;
+        } else {
+            self.pad_touched = false;
+            self.menu = false;
+            self.grip = false;
+            self.trigger = 0.;
+            self.connected = false;
+        }
+        Ok(())
+    }
+
+    pub fn pad_theta(&self) -> f64 {
+        self.pad[1].atan2(self.pad[0])
+    }
+}
+
+impl Trackable for ViveController {
+    fn pose(&self) -> IsometryMatrix3<f32> {
+        self.pose
+    }
 }
