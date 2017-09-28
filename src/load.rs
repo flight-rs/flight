@@ -43,7 +43,7 @@ pub fn wavefront_file<P: AsRef<Path>>(path: P) -> Result<MeshSource<VertNT, ()>,
 
 pub fn image_data<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
     -> Result<Texture<R, T>, Error>
-    where 
+    where
         R: gfx::Resources,
         F: gfx::Factory<R>,
         T: format::TextureFormat,
@@ -68,13 +68,13 @@ pub trait ImageData {
     fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>);
 }
 
-fn array_data<P, S>(buf: ImageBuffer<P, S>, aa: AaMode) -> (Kind, Vec<u8>) 
-    where 
+fn array_data<P, S>(buf: ImageBuffer<P, S>, aa: AaMode) -> (Kind, Vec<u8>)
+    where
         P: Pixel<Subpixel=u8> + 'static,
         S: Deref<Target = [u8]>,
 {
     (
-        Kind::D2(buf.width() as u16, buf.height() as u16, aa), 
+        Kind::D2(buf.width() as u16, buf.height() as u16, aa),
         buf.into_raw().deref().to_vec(),
     )
 }

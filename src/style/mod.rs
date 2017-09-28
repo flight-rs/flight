@@ -2,11 +2,11 @@ use gfx::{Resources, Encoder, Primitive, Rect, CommandBuffer, Slice, ShaderSet, 
 use gfx::handle::Buffer;
 use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
-use cgmath::{Matrix4};
+use nalgebra::{Transform3};
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
-use ::{TransformBlock, DepthRef, TargetRef, Error};
+use ::{Light, DepthRef, TargetRef, Error, NativeRepr};
 use ::context::*;
 use ::mesh::{Mesh, Vertex};
 
@@ -50,7 +50,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
     pub fn try_draw<C>(
         &self,
         ctx: &mut DrawContext<R, C>,
-        model: Matrix4<f32>,
+        model: Transform3<f32>,
         mesh: &Mesh<R, E::Vertex, E::Material>,
     )
         -> Result<(), Error>
@@ -59,10 +59,10 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         if let Some(ref sty) = self.map.get(&mesh.prim) {
             let mut inputs = self.inputs.borrow_mut();
             let mut trans = TransformBlock {
-                eye: ctx.left.eye.to_homogeneous().into(),
-                model: model.into(),
-                view: ctx.left.view.into(),
-                proj: ctx.left.proj.into(),
+                eye: ctx.left.eye.to_homogeneous().native(),
+                model: model.native(),
+                view: ctx.left.view.native(),
+                proj: ctx.left.proj.native(),
                 clip_offset: ctx.left.clip_offset,
             };
             inputs.transform(trans.clone());
@@ -77,9 +77,9 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
                 &mesh.mat,
             )?;
 
-            trans.eye = ctx.right.eye.to_homogeneous().into();
-            trans.view = ctx.right.view.into();
-            trans.proj = ctx.right.proj.into();
+            trans.eye = ctx.right.eye.to_homogeneous().native();
+            trans.view = ctx.right.view.native();
+            trans.proj = ctx.right.proj.native();
             trans.clip_offset = ctx.right.clip_offset;
             inputs.transform(trans);
             sty.draw_raw(
@@ -105,7 +105,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
     pub fn draw<C>(
         &self,
         ctx: &mut DrawContext<R, C>,
-        model: Matrix4<f32>,
+        model: Transform3<f32>,
         mesh: &Mesh<R, E::Vertex, E::Material>,
     )
         where C: CommandBuffer<R>
@@ -115,7 +115,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         }
     }
 
-    pub fn cfg<F: FnOnce(&mut E::Inputs)>(&self, f: F) { 
+    pub fn cfg<F: FnOnce(&mut E::Inputs)>(&self, f: F) {
         f(&mut *self.inputs.borrow_mut())
     }
 }
@@ -124,7 +124,7 @@ pub trait Style<R: Resources>: Sized {
     type Vertex: Vertex;
     type Inputs: StyleInputs<R>;
     type Material;
-    
+
     fn new<F: Factory<R> + FactoryExt<R>>(
         &mut F,
         &mut Self::Inputs,
@@ -154,4 +154,28 @@ pub trait Style<R: Resources>: Sized {
 pub trait StyleInputs<R: Resources> {
     fn transform(&mut self, block: TransformBlock);
     fn shader_set(&self) -> &ShaderSet<R>;
+}
+
+gfx_defines!{
+    constant TransformBlock {
+        model: [[f32; 4]; 4] = "model",
+        view: [[f32; 4]; 4] = "view",
+        proj: [[f32; 4]; 4] = "proj",
+        eye: [f32; 4] = "eye_pos",
+        clip_offset: f32 = "clip_offset",
+    }
+
+    constant LightBlock {
+        pos: [f32; 4] = "pos",
+        color: [f32; 4] = "color",
+    }
+}
+
+impl From<Light> for LightBlock {
+    fn from(l: Light) -> LightBlock {
+        LightBlock {
+            pos: l.pos.to_homogeneous().native(),
+            color: l.color,
+        }
+    }
 }

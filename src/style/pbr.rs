@@ -5,9 +5,9 @@ use gfx::handle::Buffer;
 use gfx::state::Rasterizer;
 use gfx::format::*;
 
-use super::{StyleInputs, Style};
+use super::{StyleInputs, Style, LightBlock, TransformBlock};
 use ::mesh::{Primitive, VertNTT};
-use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef, Light, Texture};
+use ::{Light, Error, ColorFormat, DepthFormat, TargetRef, DepthRef, Texture};
 
 pub const LIGHT_COUNT: usize = 4;
 
@@ -23,7 +23,7 @@ gfx_defines!{
         verts: gfx::VertexBuffer<VertNTT> = (),
         transform: gfx::ConstantBuffer<TransformBlock> = "transform",
         params: gfx::ConstantBuffer<PbrBlock> = "params",
-        lights: gfx::ConstantBuffer<Light> = "lights_layout",
+        lights: gfx::ConstantBuffer<LightBlock> = "lights_layout",
         scissor: gfx::Scissor = (), // TODO: Replace scissoring with viewport
         color: gfx::RenderTarget<ColorFormat> = "f_lum",
         depth: gfx::DepthTarget<DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
@@ -58,15 +58,15 @@ pub struct PbrInputs<R: Resources> {
     transform_block: Buffer<R, TransformBlock>,
     params: Option<PbrBlock>,
     params_block: Buffer<R, PbrBlock>,
-    lights: Option<[Light; LIGHT_COUNT]>,
-    lights_block: Buffer<R, Light>,
+    lights: Option<[LightBlock; LIGHT_COUNT]>,
+    lights_block: Buffer<R, LightBlock>,
 }
 
 impl<R: Resources> PbrInputs<R> {
     pub fn lights(&mut self, lights: &[Light]) {
-        let mut all = [Light::default(); LIGHT_COUNT];
+        let mut all = [LightBlock::from(Light::default()); LIGHT_COUNT];
         for i in 0..lights.len().min(LIGHT_COUNT) {
-            all[i] = lights[i];
+            all[i] = LightBlock::from(lights[i]);
         }
         self.lights = Some(all);
     }
@@ -79,7 +79,7 @@ impl<R: Resources> PbrInputs<R> {
 }
 
 impl<R: Resources> StyleInputs<R> for PbrInputs<R> {
-    fn transform(&mut self, block: TransformBlock) { 
+    fn transform(&mut self, block: TransformBlock) {
         self.transform = Some(block);
     }
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
@@ -114,11 +114,11 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
             transform_block: f.create_constant_buffer(1),
             params: Some(PbrBlock { ambient: [0.; 4] }),
             params_block: f.create_constant_buffer(1),
-            lights: Some([Light::default(); 4]),
+            lights: Some([LightBlock::from(Light::default()); 4]),
             lights_block: f.create_constant_buffer(LIGHT_COUNT),
         })
     }
-    
+
     fn draw_raw<C>(
         &self,
         inputs: &mut PbrInputs<R>,
@@ -133,7 +133,7 @@ impl<R: Resources> Style<R> for PbrStyle<R> {
         -> Result<(), Error>
         where C: CommandBuffer<R>
     {
-        if let Some(t) = inputs.transform.take() { 
+        if let Some(t) = inputs.transform.take() {
             enc.update_constant_buffer(&inputs.transform_block, &t);
         }
         if let Some(l) = inputs.lights.take() {

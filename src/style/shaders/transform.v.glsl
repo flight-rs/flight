@@ -1,5 +1,5 @@
 #version 410
- 
+
 layout(std140) uniform transform {
     mat4 model;
     mat4 view;

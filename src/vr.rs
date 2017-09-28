@@ -1,9 +1,9 @@
-use cgmath::prelude::*;
-use cgmath::*;
+use nalgebra::{self as na, Transform3, Vector3, Point3, IsometryMatrix3, Quaternion, Translation3, Unit};
 use webvr::*;
 use context::EyeContext;
 use fnv::FnvHashMap;
 use gfx::{Rect};
+use ::NativeRepr;
 
 pub struct VrContext {
     vrsm: VRServiceManager,
@@ -94,7 +94,7 @@ impl VrContext {
             secondary: None,
             tertiary: None,
             layer: self.layer.clone(),
-            stage: Matrix4::zero(),
+            stage: na::one(),
             exit: self.exit,
             paused: self.paused,
         };
@@ -106,13 +106,16 @@ impl VrContext {
             let (w, h) = size_from_data(&data);
 
             moment.stage = if let Some(ref stage) = data.stage_parameters {
-                <&Matrix4<f32>>::from(&stage.sitting_to_standing_transform).inverse_transform().unwrap()
+                Transform3::advanced(stage.sitting_to_standing_transform)
+                    .try_inverse().unwrap_or(Transform3::identity())
             } else {
-                Matrix4::identity()
+                Transform3::identity()
             };
 
-            let left_view = <&Matrix4<_>>::from(&state.left_view_matrix);
-            let right_view = <&Matrix4<_>>::from(&state.right_view_matrix);
+            let left_view = Transform3::advanced(state.left_view_matrix);
+            let right_view = Transform3::advanced(state.right_view_matrix);
+            let left_projection = Transform3::advanced(state.left_projection_matrix);
+            let right_projection = Transform3::advanced(state.right_projection_matrix);
 
             if let (Some(pose), true) = (pose_transform(&state.pose), data.connected) {
                 moment.hmd = Some(Hmd {
@@ -120,23 +123,23 @@ impl VrContext {
                     size: (w, h),
                     pose: pose,
                     left: EyeContext {
-                        eye: Point3::from_vec(left_view.invert().unwrap().w.truncate()),
-                        view: left_view.clone(),
-                        proj: <&Matrix4<_>>::from(&state.left_projection_matrix).clone(),
+                        eye: left_view.try_inverse().unwrap() * Point3::origin(),
+                        view: left_view,
+                        proj: left_projection,
                         clip_offset: -0.5,
-                        clip: Rect { 
+                        clip: Rect {
                             x: 0,
                             y: 0,
                             w: data.left_eye_parameters.render_width as u16,
-                            h: h as u16, 
+                            h: h as u16,
                         },
                     },
                     right: EyeContext {
-                        eye: Point3::from_vec(right_view.invert().unwrap().w.truncate()),
-                        view: right_view.clone(),
-                        proj: <&Matrix4<_>>::from(&state.right_projection_matrix).clone(),
+                        eye: right_view.try_inverse().unwrap() * Point3::origin(),
+                        view: right_view,
+                        proj: right_projection,
                         clip_offset: 0.5,
-                        clip: Rect { 
+                        clip: Rect {
                             x: data.left_eye_parameters.render_width as u16,
                             y: 0,
                             w: data.right_eye_parameters.render_width as u16,
@@ -189,7 +192,7 @@ impl ControllerRef {
         }
     }
 
-    /// Make this always reference the current controller 
+    /// Make this always reference the current controller
     /// (will not change when controller role changes).
     pub fn fixed(&self, moment: &VrMoment) -> ControllerRef {
         match self.index(moment) {
@@ -214,12 +217,12 @@ pub fn tertiary() -> ControllerRef {
 pub type ControllerButton = VRGamepadButton;
 
 pub trait Trackable {
-    fn pose(&self) -> Matrix4<f32>;
+    fn pose(&self) -> IsometryMatrix3<f32>;
 
-    fn x_dir(&self) -> Vector3<f32> { self.pose().x.truncate() }
-    fn y_dir(&self) -> Vector3<f32> { self.pose().y.truncate() }
-    fn z_dir(&self) -> Vector3<f32> { self.pose().z.truncate() }
-    fn origin(&self) -> Point3<f32> { Point3::from_vec(self.pose().w.truncate()) }
+    fn x_dir(&self) -> Vector3<f32> { self.pose() * Vector3::x() }
+    fn y_dir(&self) -> Vector3<f32> { self.pose() * Vector3::y() }
+    fn z_dir(&self) -> Vector3<f32> { self.pose() * Vector3::z() }
+    fn origin(&self) -> Point3<f32> { self.pose() * Point3::origin() }
     fn pointing(&self) -> Vector3<f32> { -self.z_dir() }
 }
 
@@ -227,13 +230,13 @@ pub trait Trackable {
 pub struct Hmd {
     pub name: String,
     pub size: (u32, u32),
-    pub pose: Matrix4<f32>,
+    pub pose: IsometryMatrix3<f32>,
     pub left: EyeContext,
     pub right: EyeContext,
 }
 
 impl Trackable for Hmd {
-    fn pose(&self) -> Matrix4<f32> {
+    fn pose(&self) -> IsometryMatrix3<f32> {
         self.pose
     }
 }
@@ -241,13 +244,13 @@ impl Trackable for Hmd {
 #[derive(Clone, Debug)]
 pub struct Controller {
     pub name: String,
-    pub pose: Matrix4<f32>,
+    pub pose: IsometryMatrix3<f32>,
     pub axes: Vec<f64>,
     pub buttons: Vec<ControllerButton>,
 }
 
 impl Trackable for Controller {
-    fn pose(&self) -> Matrix4<f32> {
+    fn pose(&self) -> IsometryMatrix3<f32> {
         self.pose
     }
 }
@@ -261,7 +264,7 @@ pub struct VrMoment {
     secondary: Option<u32>,
     tertiary: Option<u32>,
     layer: VRLayer,
-    pub stage: Matrix4<f32>,
+    pub stage: Transform3<f32>,
     pub exit: bool,
     pub paused: bool,
 }
@@ -286,13 +289,10 @@ impl VrMoment {
     }
 }
 
-fn pose_transform(ctr: &VRPose) -> Option<Matrix4<f32>> {
-    let or = match ctr.orientation { Some(o) => o, None => return None };
-    let rot = Quaternion::new(or[3], or[0], or[1], or[2]);
-    let pos = Vector3::from(match ctr.position { Some(o) => o, None => return None });
-    Some(Matrix4::from(Decomposed {
-        scale: 1.,
-        rot: rot,
-        disp: pos,
-    }))
+fn pose_transform(ctr: &VRPose) -> Option<IsometryMatrix3<f32>> {
+    let or = Unit::new_normalize(Quaternion::advanced(
+        match ctr.orientation { Some(o) => o, None => return None }));
+    let pos = Translation3::advanced(
+        match ctr.position { Some(o) => o, None => return None });
+    Some(IsometryMatrix3::from_parts(pos, na::convert(or)))
 }

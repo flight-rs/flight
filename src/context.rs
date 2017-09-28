@@ -1,13 +1,13 @@
 use gfx::{Rect, Encoder, Resources, CommandBuffer};
-use cgmath::{Matrix4, Point3, SquareMatrix};
+use nalgebra::{self as na, Transform3, Point3};
 
 use ::{DepthRef, TargetRef};
 
 #[derive(Copy, Clone)]
 pub struct EyeContext {
     pub eye: Point3<f32>,
-    pub view: Matrix4<f32>,
-    pub proj: Matrix4<f32>,
+    pub view: Transform3<f32>,
+    pub proj: Transform3<f32>,
     pub clip_offset: f32,
     pub clip: Rect,
 }
@@ -15,9 +15,9 @@ pub struct EyeContext {
 impl Default for EyeContext {
     fn default() -> EyeContext {
         EyeContext {
-            eye: Point3::from([0.; 3]),
-            view: Matrix4::identity(),
-            proj: Matrix4::identity(),
+            eye: Point3::origin(),
+            view: na::one(),
+            proj: na::one(),
             clip_offset: 0.,
             clip: Rect { x: 0, y: 0, w: 0, h: 0 },
         }

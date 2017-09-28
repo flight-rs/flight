@@ -4,9 +4,9 @@ use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
 use gfx::state::Rasterizer;
 
-use super::{StyleInputs, Style};
+use super::{StyleInputs, Style, TransformBlock};
 use ::mesh::{Primitive, VertC};
-use ::{Error, TransformBlock, ColorFormat, DepthFormat, TargetRef, DepthRef};
+use ::{Error, ColorFormat, DepthFormat, TargetRef, DepthRef};
 
 gfx_defines!{
     pipeline pl {
@@ -66,7 +66,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
             transform_block: f.create_constant_buffer(1),
         })
     }
-    
+
     fn draw_raw<C>(
         &self,
         inputs: &mut SolidInputs<R>,
@@ -81,7 +81,7 @@ impl<R: Resources> Style<R> for SolidStyle<R> {
         -> Result<(), Error>
         where C: CommandBuffer<R>
     {
-        if let Some(t) = inputs.transform.take() { 
+        if let Some(t) = inputs.transform.take() {
             enc.update_constant_buffer(&inputs.transform_block, &t);
         }
         enc.draw(slice, &self.pso, &pl::Data {

@@ -3,9 +3,8 @@ use gfx::{Resources, Slice, traits, pso};
 use gfx::format::Format;
 use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
-use cgmath::prelude::*;
-use cgmath::{Point3, Point2, Vector3};
-use std::ops::AddAssign;
+use nalgebra::{self as na, Point3, Point2, Vector3};
+use ::NativeRepr;
 
 gfx_defines!{
     /// A vertex that includes pos only.
@@ -51,20 +50,20 @@ gfx_defines!{
 
 /// A type that can be used as a vertex.
 pub trait Vertex: traits::Pod + pso::buffer::Structure<Format> {
-    fn pos(&self) -> &[f32; 3];
-    fn mut_pos(&mut self) -> &mut [f32; 3];
+    fn pos(&self) -> &Point3<f32>;
+    fn mut_pos(&mut self) -> &mut Point3<f32>;
 }
 
 /// A vertex that can have a norm attribute added.
 pub trait WithNorm: Vertex {
     type With: HasNorm;
-    fn with_norm(self, norm: [f32; 3]) -> Self::With;
+    fn with_norm(self, norm: Vector3<f32>) -> Self::With;
 }
 
 /// A vertex with a norm component.
 pub trait HasNorm: Vertex {
-    fn norm(&self) -> &[f32; 3];
-    fn mut_norm(&mut self) -> &mut [f32; 3];
+    fn norm(&self) -> &Vector3<f32>;
+    fn mut_norm(&mut self) -> &mut Vector3<f32>;
 }
 
 /// A vertex that can have a color attribute added.
@@ -82,82 +81,82 @@ pub trait HasColor: Vertex {
 /// A vertex that can have a tex attribute added.
 pub trait WithTex: Vertex {
     type With: HasTex;
-    fn with_tex(self, tex: [f32; 2]) -> Self::With;
+    fn with_tex(self, tex: Point2<f32>) -> Self::With;
 }
 
 /// A vertex with a tex component.
 pub trait HasTex: Vertex {
-    fn tex(&self) -> &[f32; 2];
-    fn mut_tex(&mut self) -> &mut [f32; 2];
+    fn tex(&self) -> &Point2<f32>;
+    fn mut_tex(&mut self) -> &mut Point2<f32>;
 }
 
 /// A vertex that can have tan and bitan attributes added.
 pub trait WithTan: Vertex {
     type With: HasTan;
-    fn with_tan(self, tan: [f32; 3], bitan: [f32; 3]) -> Self::With;
+    fn with_tan(self, tan: Vector3<f32>, bitan: Vector3<f32>) -> Self::With;
 }
 
 /// A vertex with a tan component.
 pub trait HasTan: Vertex {
-    fn tan(&self) -> &[f32; 3];
-    fn mut_tan(&mut self) -> &mut [f32; 3];
-    fn bitan(&self) -> &[f32; 3];
-    fn mut_bitan(&mut self) -> &mut [f32; 3];
+    fn tan(&self) -> &Vector3<f32>;
+    fn mut_tan(&mut self) -> &mut Vector3<f32>;
+    fn bitan(&self) -> &Vector3<f32>;
+    fn mut_bitan(&mut self) -> &mut Vector3<f32>;
 }
 
 macro_rules! vertex_fn {
     ($n:ident, $o:ident, $s:ident, $norm:ident: norm, $c:tt) => {
         impl WithNorm for $n {
-            type With = $o; 
-            fn with_norm($s, $norm: [f32; 3]) -> $o { $o $c }
+            type With = $o;
+            fn with_norm($s, $norm: Vector3<f32>) -> $o { $o $c }
         }
     };
     ($n:ident, $o:ident, $s:ident, $color:ident: color, $c:tt) => {
         impl WithColor for $n {
-            type With = $o; 
+            type With = $o;
             fn with_color($s, $color: [f32; 3]) -> $o { $o $c }
         }
     };
     ($n:ident, $o:ident, $s:ident, $tex:ident: tex, $c:tt) => {
         impl WithTex for $n {
-            type With = $o; 
-            fn with_tex($s, $tex: [f32; 2]) -> $o { $o $c }
+            type With = $o;
+            fn with_tex($s, $tex: Point2<f32>) -> $o { $o $c }
         }
     };
     ($n:ident, $o:ident, $s:ident, $tan:ident: tan, $bitan:ident: bitan, $c:tt) => {
         impl WithTan for $n {
-            type With = $o; 
-            fn with_tan($s, $tan: [f32; 3], $bitan: [f32; 3]) -> $o { $o $c }
+            type With = $o;
+            fn with_tan($s, $tan: Vector3<f32>, $bitan: Vector3<f32>) -> $o { $o $c }
         }
     };
 }
 
 macro_rules! vertex_component {
-    ($n:ident, tex) => { impl HasTex for $n { 
-        fn tex(&self) -> &[f32; 2] { &self.tex }
-        fn mut_tex(&mut self) -> &mut [f32; 2] { &mut self.tex } 
+    ($n:ident, tex) => { impl HasTex for $n {
+        fn tex(&self) -> &Point2<f32> { NativeRepr::advanced_ref(&self.tex) }
+        fn mut_tex(&mut self) -> &mut Point2<f32> { NativeRepr::advanced_mut(&mut self.tex) }
     } };
-    ($n:ident, norm) => { impl HasNorm for $n { 
-        fn norm(&self) -> &[f32; 3] { &self.norm }
-        fn mut_norm(&mut self) -> &mut [f32; 3] { &mut self.norm }
+    ($n:ident, norm) => { impl HasNorm for $n {
+        fn norm(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.norm) }
+        fn mut_norm(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.norm) }
     } };
-    ($n:ident, color) => { impl HasColor for $n { 
+    ($n:ident, color) => { impl HasColor for $n {
         fn color(&self) -> &[f32; 3] { &self.color }
         fn mut_color(&mut self) -> &mut [f32; 3] { &mut self.color }
     } };
-    ($n:ident, tan) => { impl HasTan for $n { 
-        fn tan(&self) -> &[f32; 3] { &self.tan }
-        fn mut_tan(&mut self) -> &mut [f32; 3] { &mut self.tan }
-        fn bitan(&self) -> &[f32; 3] { &self.bitan }
-        fn mut_bitan(&mut self) -> &mut [f32; 3] { &mut self.bitan } 
+    ($n:ident, tan) => { impl HasTan for $n {
+        fn tan(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.tan) }
+        fn mut_tan(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.tan) }
+        fn bitan(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.bitan) }
+        fn mut_bitan(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.bitan) }
     } };
 }
 
 macro_rules! impl_vertex {
     ($n:ident { $(&self.$g:ident;)* $($o:ident($s:ident, $($a:ident: $p:ident),*) $c:tt;)* }) => {
-        impl Vertex for $n { 
-            fn pos(&self) -> &[f32; 3] { &self.pos }
-            fn mut_pos(&mut self) -> &mut [f32; 3] { &mut self.pos }
+        impl Vertex for $n {
+            fn pos(&self) -> &Point3<f32> { NativeRepr::advanced_ref(&self.pos) }
+            fn mut_pos(&mut self) -> &mut Point3<f32> { NativeRepr::advanced_mut(&mut self.pos) }
         }
         $(vertex_component!($n, $g);)*
         $(vertex_fn!($n, $o, $s, $($a: $p),*, $c);)*
@@ -167,7 +166,7 @@ macro_rules! impl_vertex {
 impl_vertex!(Vert {
     VertN(self, n: norm) {
         pos: self.pos,
-        norm: n,
+        norm: n.native(),
     };
     VertC(self, c: color) {
         pos: self.pos,
@@ -185,7 +184,7 @@ impl_vertex!(VertN {
     VertNT(self, t: tex) {
         pos: self.pos,
         norm: self.norm,
-        tex: t,
+        tex: t.native(),
     };
 });
 
@@ -196,8 +195,8 @@ impl_vertex!(VertNT {
         pos: self.pos,
         norm: self.norm,
         tex: self.tex,
-        tan: t,
-        bitan: b,
+        tan: t.native(),
+        bitan: b.native(),
     };
 });
 
@@ -212,7 +211,7 @@ impl_vertex!(VertC {
     VertNC(self, n: norm) {
         pos: self.pos,
         color: self.color,
-        norm: n,
+        norm: n.native(),
     };
 });
 
@@ -318,7 +317,7 @@ impl<V: WithColor, M> MeshSource<V, M> {
 }
 
 impl<V: WithTex, M> MeshSource<V, M> {
-    pub fn with_tex(self, c: [f32; 2]) -> MeshSource<V::With, M> {
+    pub fn with_tex(self, c: Point2<f32>) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_tex(c)).collect(),
             inds: self.inds,
@@ -328,20 +327,16 @@ impl<V: WithTex, M> MeshSource<V, M> {
     }
 }
 
-fn add_to(a: &mut [f32; 3], b: Vector3<f32>) {
-    <&mut Vector3<_>>::from(a).add_assign(b)
-}
-
 fn add_tri_tan<T: HasTan + HasTex>(a: &mut T, b: &mut T, c: &mut T) {
     let (tan, bitan) = {
         // positions
-        let pos1: &Point3<_> = a.pos().into();
-        let pos2: &Point3<_> = b.pos().into();
-        let pos3: &Point3<_> = c.pos().into();
+        let pos1 = a.pos();
+        let pos2 = b.pos();
+        let pos3 = c.pos();
         // texture coordinates
-        let uv1: &Point2<_> = a.tex().into();
-        let uv2: &Point2<_> = b.tex().into();
-        let uv3: &Point2<_> = c.tex().into();
+        let uv1 = a.tex();
+        let uv2 = b.tex();
+        let uv3 = c.tex();
 
         // deltas
         let edge1 = pos2 - pos1;
@@ -366,13 +361,13 @@ fn add_tri_tan<T: HasTan + HasTex>(a: &mut T, b: &mut T, c: &mut T) {
         (tan, bitan)
     };
 
-    add_to(a.mut_tan(), tan);
-    add_to(b.mut_tan(), tan);
-    add_to(c.mut_tan(), tan);
+    *a.mut_tan() += tan;
+    *b.mut_tan() += tan;
+    *c.mut_tan() += tan;
 
-    add_to(a.mut_bitan(), bitan);
-    add_to(b.mut_bitan(), bitan);
-    add_to(c.mut_bitan(), bitan);
+    *a.mut_bitan() += bitan;
+    *b.mut_bitan() += bitan;
+    *c.mut_bitan() += bitan;
 }
 
 unsafe fn mut_ind<T>(arr: &[T], i: usize) -> &mut T {
@@ -405,19 +400,14 @@ fn add_tans<I, V>(mut inds: I, tris: &mut Vec<V>, p: Primitive)
     }
 }
 
-fn safe_normalize(v: &mut Vector3<f32>) {
-    let mag = v.magnitude();
-    if mag != 0. { *v /= mag }
-}
-
 impl<V, M> MeshSource<V, M>
     where V: WithTan + HasTex, V::With: HasTex
 {
-    /// Computes tangents and bitangents for a textured mesh so that normal mapping can be used. 
+    /// Computes tangents and bitangents for a textured mesh so that normal mapping can be used.
     /// The calculated vectors will be 0 if the primitive type is not `TriangleList` or `TriangleStrip`.
     pub fn compute_tan(self) -> MeshSource<V::With, M> {
         let mut new: Vec<_> = self.verts.into_iter()
-            .map(|v| v.with_tan([0.; 3], [0.; 3]))
+            .map(|v| v.with_tan(na::zero(), na::zero()))
             .collect();
         use self::Indexing::*;
         match self.inds {
@@ -426,8 +416,9 @@ impl<V, M> MeshSource<V, M>
             Range(a, b) => add_tans(a as usize..b as usize, &mut new, self.prim),
         };
         for v in new.iter_mut() {
-            safe_normalize(v.mut_tan().into());
-            safe_normalize(v.mut_bitan().into());
+            use std::f32::EPSILON;
+            v.mut_tan().try_normalize_mut(EPSILON);
+            v.mut_bitan().try_normalize_mut(EPSILON);
         }
         MeshSource {
             verts: new,

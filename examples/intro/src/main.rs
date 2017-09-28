@@ -5,7 +5,7 @@ extern crate clap;
 extern crate simplelog;
 extern crate flight as lib;
 extern crate gfx;
-extern crate cgmath;
+extern crate nalgebra;
 extern crate glutin;
 extern crate gfx_device_gl;
 extern crate gfx_window_glutin;
@@ -35,7 +35,7 @@ fn main() {
             .help("Use mock VR API"))
         .get_matches();
     let mock = matches.is_present("mock");
-    
+
     // VR init
     let mut vrctx = match if mock { VrContext::mock() } else { VrContext::new() } {
         Some(v) => v,
@@ -139,7 +139,7 @@ fn main() {
         events_loop.poll_events(|event| {
             match event {
                 // process events here
-                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } => 
+                glutin::Event::WindowEvent { event: glutin::WindowEvent::Closed, .. } =>
                     running = false,
                 _ => ()
             }

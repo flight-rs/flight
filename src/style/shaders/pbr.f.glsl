@@ -46,10 +46,10 @@ float distributionGGX(vec3 N, vec3 H, float roughness) {
     a = a * a;
     float n_dot_h = max(dot(N, H), 0.0);
     float n_dot_h2 = n_dot_h * n_dot_h;
-    
+
     float denom = (n_dot_h2 * (a - 1.0) + 1.0);
     denom = PI * denom * denom;
-    
+
     return a / denom;
 }
 
@@ -58,7 +58,7 @@ float geometrySchlickGGX(float n_dot_v, float roughness) {
     float k = (rough_more * rough_more) / 8.0;
 
     float denom = n_dot_v * (1.0 - k) + k;
-    
+
     return n_dot_v / denom;
 }
 
@@ -67,7 +67,7 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
     float n_dot_l = max(dot(N, L), 0.0);
     float ggx2 = geometrySchlickGGX(n_dot_v, roughness);
     float ggx1 = geometrySchlickGGX(n_dot_l, roughness);
-    
+
     return ggx1 * ggx2;
 }
 
@@ -96,25 +96,25 @@ void main() {
         vec3 H = normalize(V + L);
         float dist = length(lpos - I_POS);
         vec3 radiance = light.color.rgb * light.color.a / (dist * dist);
-        
+
         // brdf
-        float NDF = distributionGGX(N, H, roughness);        
-        float G = geometrySmith(N, V, L, roughness);      
-        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);       
-        
+        float NDF = distributionGGX(N, H, roughness);
+        float G = geometrySmith(N, V, L, roughness);
+        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metalness;     
-        
+        kD *= 1.0 - metalness;
+
         vec3 nominator = NDF * G * F;
-        float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; 
+        float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001;
         vec3 brdf = nominator / denominator;
-            
+
         // add to outgoing radiance Lo
-        float n_dot_l = max(dot(N, L), 0.0);                
+        float n_dot_l = max(dot(N, L), 0.0);
         lum += (kD * albedo / PI + brdf) * radiance * n_dot_l;
     }
 
     // OUT
     f_lum = vec4(pow(lum, vec3(1 / 2.2)), 1);
-} 
+}

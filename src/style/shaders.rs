@@ -1,14 +1,9 @@
-use std::fs::File;
-use std::path::Path;
-use std::io::prelude::*;
-use ::Error;
-
 macro_rules! static_file {
     ($p:expr) => ( ::style::shaders::source($p, include_str!($p)) )
 }
 
 macro_rules! shader {
-    ($name:ident { $($x:tt)+ }) => (pub fn $name<R: gfx::Resources, F: gfx::Factory<R>>(factory: &mut F) 
+    ($name:ident { $($x:tt)+ }) => (pub fn $name<R: gfx::Resources, F: gfx::Factory<R>>(factory: &mut F)
         -> Result<gfx::ShaderSet<R>, Error> {
         Ok(shader_set!(factory, $($x)+))
     })
@@ -59,20 +54,6 @@ pub struct BuildShader {
     prefix: String,
     source: String,
     pub name: String,
-}
-
-pub fn file<P: AsRef<Path>>(path: P) -> Result<BuildShader, Error> {
-    let path = path.as_ref();
-    let mut build = BuildShader {
-        prefix: String::new(),
-        source: String::new(),
-        name: format!("{}", path.display()),
-    };
-    File::open(path)
-        .map_err(|e| (e, path.display()))?
-        .read_to_string(&mut build.source)
-        .map_err(|e| (e, path.display()))?;
-    Ok(build)
 }
 
 pub fn source(name: &str, source: &str) -> BuildShader {

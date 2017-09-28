@@ -3,7 +3,7 @@
 extern crate log;
 #[macro_use]
 extern crate gfx;
-extern crate cgmath;
+extern crate nalgebra;
 extern crate obj as wavefront;
 extern crate fnv;
 extern crate image;
@@ -19,9 +19,13 @@ pub mod vr;
 mod error;
 pub use self::error::*;
 
+mod util;
+pub use self::util::*;
+
 use gfx::shade::core::CreateShaderError;
 use gfx::handle::*;
 use gfx::format::*;
+use nalgebra::{Point3};
 
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
 pub type DepthFormat = (D24_S8, Unorm);
@@ -30,26 +34,16 @@ pub type DepthRef<R> = DepthStencilView<R, DepthFormat>;
 pub type ShaderResult<R> = Result<gfx::ShaderSet<R>, CreateShaderError>;
 pub type PbrMesh<R> = mesh::Mesh<R, mesh::VertNTT, style::PbrMaterial<R>>;
 
-// Define GFX rendering stuff and pipelines
-gfx_defines!{
-    constant TransformBlock {
-        model: [[f32; 4]; 4] = "model",
-        view: [[f32; 4]; 4] = "view",
-        proj: [[f32; 4]; 4] = "proj",
-        eye: [f32; 4] = "eye_pos",
-        clip_offset: f32 = "clip_offset",
-    }
-
-    constant Light {
-        pos: [f32; 4] = "pos",
-        color: [f32; 4] = "color",
-    }
+#[derive(Copy, Debug, Clone)]
+pub struct Light {
+    pub pos: Point3<f32>,
+    pub color: [f32; 4],
 }
 
 impl Default for Light {
     fn default() -> Light {
         Light {
-            pos: [0.; 4],
+            pos: Point3::origin(),
             color: [0.; 4],
         }
     }
