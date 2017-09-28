@@ -87,7 +87,7 @@ fn main() {
     let (.., depth) = factory.create_depth_stencil(render_width as u16, render_height as u16).unwrap();
 
     let surface = factory.view_texture_as_render_target::<(R8_G8_B8_A8, Unorm)>(&tex, 0, None).unwrap();
-    let application = match app::App::new(&mut factory) {
+    let mut application = match app::App::new(&mut factory) {
         Ok(a) => a,
         Err(e) => {
             error!("Could not start application: {}", e);

@@ -117,3 +117,7 @@ $RECYCLE.BIN/
 /target/
 **/*.rs.bk
 **/*.rs.fmt
+
+# Dynamic lib files
+examples/**/*.pdb
+examples/**/*.dll

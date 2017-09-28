@@ -14,6 +14,7 @@ use lib::vr::{primary, secondary,VrMoment};
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
 pub const BACKGROUND: [f32; 4] = [0.529, 0.808, 0.980, 1.0];
+const PI: f32 = ::std::f32::consts::PI;
 
 pub struct App<R: gfx::Resources> {
     solid: Styler<R, SolidStyle<R>>,
@@ -24,6 +25,7 @@ pub struct App<R: gfx::Resources> {
     controller: PbrMesh<R>,
     teapot: PbrMesh<R>,
     start_time: Instant,
+    last_pad: (f32, f32),
 }
 
 fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
@@ -111,11 +113,12 @@ impl<R: gfx::Resources> App<R> {
             controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
             teapot: load::object_directory(factory, "assets/teapot_wood/")?,
             start_time: Instant::now(),
+            last_pad: (1., 0.),
         })
     }
 
     pub fn draw<C: gfx::CommandBuffer<R>>(
-        &self,
+        &mut self,
         ctx: &mut DrawContext<R, C>,
         vrm: &VrMoment,
     ) {
@@ -130,7 +133,7 @@ impl<R: gfx::Resources> App<R> {
         let cont_light = if let Some(cont) = vrm.controller(secondary()) {
             Light {
                 pos: (cont.pose * Vector4::new(0., 0., -0.1, 1.)).into(),
-                color: [0.6, 0.6, 0.6, 100. * cont.axes[2] as f32],
+                color: [0.6, 0.6, 0.6, 10. * cont.axes[2] as f32],
             }
         } else {
             Default::default()
@@ -162,10 +165,13 @@ impl<R: gfx::Resources> App<R> {
         // Draw teapot
         let tearot = Quaternion::from(Euler::new(Deg((t * 0.7).sin() * 15.), Deg(t * 60.), Deg((t * 0.8).cos() * 15.)));
         let mat = if let Some(cont) = vrm.controller(primary()) {
-            cont.pose * Matrix4::from(Decomposed {	
-                scale: 0.15 * cont.axes[0] as f32,		
+            if cont.axes[0] != 0. {
+                self.last_pad = (cont.axes[0] as f32, cont.axes[1] as f32);
+            }
+            cont.pose * Matrix4::from(Decomposed {
+                scale: 0.15 * self.last_pad.0.atan2(self.last_pad.1).abs() as f32 / PI,		
                 rot: tearot,		
-                disp: Vector3::new(0., 0., -0.25),		
+                disp: Vector3::new(0., 0., -0.25),
             })
         } else {
             vrm.stage * Matrix4::from(Decomposed {	
