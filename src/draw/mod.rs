@@ -71,10 +71,10 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
         if let Some(ref sty) = self.map.get(&mesh.prim) {
             let mut inputs = self.inputs.borrow_mut();
             let mut trans = TransformBlock {
-                eye: ctx.left.eye.to_homogeneous().native(),
-                model: model.native(),
-                view: ctx.left.view.native(),
-                proj: ctx.left.proj.native(),
+                eye: ctx.left.eye.to_homogeneous().downgrade(),
+                model: model.downgrade(),
+                view: ctx.left.view.downgrade(),
+                proj: ctx.left.proj.downgrade(),
                 clip_offset: ctx.left.clip_offset,
             };
             inputs.transform(trans.clone());
@@ -89,9 +89,9 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
                 &mesh.mat,
             )?;
 
-            trans.eye = ctx.right.eye.to_homogeneous().native();
-            trans.view = ctx.right.view.native();
-            trans.proj = ctx.right.proj.native();
+            trans.eye = ctx.right.eye.to_homogeneous().downgrade();
+            trans.view = ctx.right.view.downgrade();
+            trans.proj = ctx.right.proj.downgrade();
             trans.clip_offset = ctx.right.clip_offset;
             inputs.transform(trans);
             sty.draw_raw(
@@ -199,7 +199,7 @@ mod defines {
     impl From<Light> for LightBlock {
         fn from(l: Light) -> LightBlock {
             LightBlock {
-                pos: l.pos.to_homogeneous().native(),
+                pos: l.pos.to_homogeneous().downgrade(),
                 color: l.color,
             }
         }

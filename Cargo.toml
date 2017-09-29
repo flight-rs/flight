@@ -20,4 +20,4 @@ rust-webvr = "^0.8.1"
 approx = "^0.1.1"
 
 [workspace]
-members = ["examples/intro"]
+members = ["examples/*"]

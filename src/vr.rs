@@ -126,16 +126,16 @@ impl VrContext {
             let (w, h) = size_from_data(&data);
 
             moment.stage = if let Some(ref stage) = data.stage_parameters {
-                Transform3::advanced(stage.sitting_to_standing_transform)
+                Transform3::upgrade(stage.sitting_to_standing_transform)
                     .try_inverse().unwrap_or(Transform3::identity())
             } else {
                 Transform3::identity()
             };
 
-            let left_view = Transform3::advanced(state.left_view_matrix);
-            let right_view = Transform3::advanced(state.right_view_matrix);
-            let left_projection = Transform3::advanced(state.left_projection_matrix);
-            let right_projection = Transform3::advanced(state.right_projection_matrix);
+            let left_view = Transform3::upgrade(state.left_view_matrix);
+            let right_view = Transform3::upgrade(state.right_view_matrix);
+            let left_projection = Transform3::upgrade(state.left_projection_matrix);
+            let right_projection = Transform3::upgrade(state.right_projection_matrix);
 
             if let (Some(pose), true) = (pose_transform(&state.pose), data.connected) {
                 moment.hmd = Some(HmdMoment {
@@ -365,9 +365,9 @@ impl Trackable for ControllerMoment {
 }
 
 fn pose_transform(ctr: &VRPose) -> Option<Isometry3<f32>> {
-    let or = Unit::new_normalize(Quaternion::advanced(
+    let or = Unit::new_normalize(Quaternion::upgrade(
         match ctr.orientation { Some(o) => o, None => return None }));
-    let pos = Translation3::advanced(
+    let pos = Translation3::upgrade(
         match ctr.position { Some(o) => o, None => return None });
     Some(Isometry3::from_parts(pos, or))
 }

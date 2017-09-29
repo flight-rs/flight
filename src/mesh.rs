@@ -133,30 +133,30 @@ macro_rules! vertex_fn {
 
 macro_rules! vertex_component {
     ($n:ident, tex) => { impl HasTex for $n {
-        fn tex(&self) -> &Point2<f32> { NativeRepr::advanced_ref(&self.tex) }
-        fn mut_tex(&mut self) -> &mut Point2<f32> { NativeRepr::advanced_mut(&mut self.tex) }
+        fn tex(&self) -> &Point2<f32> { NativeRepr::upgrade_ref(&self.tex) }
+        fn mut_tex(&mut self) -> &mut Point2<f32> { NativeRepr::upgrade_mut(&mut self.tex) }
     } };
     ($n:ident, norm) => { impl HasNorm for $n {
-        fn norm(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.norm) }
-        fn mut_norm(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.norm) }
+        fn norm(&self) -> &Vector3<f32> { NativeRepr::upgrade_ref(&self.norm) }
+        fn mut_norm(&mut self) -> &mut Vector3<f32> { NativeRepr::upgrade_mut(&mut self.norm) }
     } };
     ($n:ident, color) => { impl HasColor for $n {
         fn color(&self) -> &[f32; 3] { &self.color }
         fn mut_color(&mut self) -> &mut [f32; 3] { &mut self.color }
     } };
     ($n:ident, tan) => { impl HasTan for $n {
-        fn tan(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.tan) }
-        fn mut_tan(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.tan) }
-        fn bitan(&self) -> &Vector3<f32> { NativeRepr::advanced_ref(&self.bitan) }
-        fn mut_bitan(&mut self) -> &mut Vector3<f32> { NativeRepr::advanced_mut(&mut self.bitan) }
+        fn tan(&self) -> &Vector3<f32> { NativeRepr::upgrade_ref(&self.tan) }
+        fn mut_tan(&mut self) -> &mut Vector3<f32> { NativeRepr::upgrade_mut(&mut self.tan) }
+        fn bitan(&self) -> &Vector3<f32> { NativeRepr::upgrade_ref(&self.bitan) }
+        fn mut_bitan(&mut self) -> &mut Vector3<f32> { NativeRepr::upgrade_mut(&mut self.bitan) }
     } };
 }
 
 macro_rules! impl_vertex {
     ($n:ident { $(&self.$g:ident;)* $($o:ident($s:ident, $($a:ident: $p:ident),*) $c:tt;)* }) => {
         impl Vertex for $n {
-            fn pos(&self) -> &Point3<f32> { NativeRepr::advanced_ref(&self.pos) }
-            fn mut_pos(&mut self) -> &mut Point3<f32> { NativeRepr::advanced_mut(&mut self.pos) }
+            fn pos(&self) -> &Point3<f32> { NativeRepr::upgrade_ref(&self.pos) }
+            fn mut_pos(&mut self) -> &mut Point3<f32> { NativeRepr::upgrade_mut(&mut self.pos) }
         }
         $(vertex_component!($n, $g);)*
         $(vertex_fn!($n, $o, $s, $($a: $p),*, $c);)*
@@ -166,7 +166,7 @@ macro_rules! impl_vertex {
 impl_vertex!(Vert {
     VertN(self, n: norm) {
         pos: self.pos,
-        norm: n.native(),
+        norm: n.downgrade(),
     };
     VertC(self, c: color) {
         pos: self.pos,
@@ -184,7 +184,7 @@ impl_vertex!(VertN {
     VertNT(self, t: tex) {
         pos: self.pos,
         norm: self.norm,
-        tex: t.native(),
+        tex: t.downgrade(),
     };
 });
 
@@ -195,8 +195,8 @@ impl_vertex!(VertNT {
         pos: self.pos,
         norm: self.norm,
         tex: self.tex,
-        tan: t.native(),
-        bitan: b.native(),
+        tan: t.downgrade(),
+        bitan: b.downgrade(),
     };
 });
 
@@ -211,7 +211,7 @@ impl_vertex!(VertC {
     VertNC(self, n: norm) {
         pos: self.pos,
         color: self.color,
-        norm: n.native(),
+        norm: n.downgrade(),
     };
 });
 
