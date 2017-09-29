@@ -8,6 +8,9 @@ extern crate obj as wavefront;
 extern crate fnv;
 extern crate image;
 extern crate rust_webvr as webvr;
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
 
 /// Mesh drawing
 pub mod draw;

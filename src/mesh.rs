@@ -432,3 +432,35 @@ impl<V, M> MeshSource<V, M>
         }
     }
 }
+
+#[test]
+fn compute_tan() {
+    use nalgebra::Vector3;
+    let dag = 1. / (2f32).sqrt();
+    
+    let mesh = MeshSource {
+        verts: vec![
+            VertNT { pos: [0., 0., 0.], norm: [0., 1., 0.], tex: [0., 0.] },
+            VertNT { pos: [1., 0., 0.], norm: [0., 1., 0.], tex: [1., 0.] },
+            VertNT { pos: [1., 0., 1.], norm: [0., dag, -dag], tex: [1., 1.] },
+            VertNT { pos: [0., 0., 1.], norm: [0., dag, -dag], tex: [0., 1.] },
+            VertNT { pos: [0., 1., 1.], norm: [0., 0., -1.], tex: [0., 2.] },
+            VertNT { pos: [1., 1., 1.], norm: [0., 0., -1.], tex: [1., 2.] },
+        ],
+        inds: Indexing::All,
+        prim: Primitive::TriangleStrip,
+        mat: (),
+    }.compute_tan();
+    for v in &mesh.verts[0..2] {
+        relative_eq!(*v.tan(), Vector3::new(1., 0., 0.));
+        relative_eq!(*v.bitan(), Vector3::new(0., 0., 1.));
+    }
+    for v in &mesh.verts[2..4] {
+        relative_eq!(*v.tan(), Vector3::new(1., 0., 0.));
+        relative_eq!(*v.bitan(), Vector3::new(0., dag, dag));
+    }
+    for v in &mesh.verts[4..6] {
+        relative_eq!(*v.tan(), Vector3::new(1., 0., 0.));
+        relative_eq!(*v.bitan(), Vector3::new(0., 1., 0.));
+    }
+}

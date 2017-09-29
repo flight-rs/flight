@@ -197,8 +197,8 @@ impl VrContext {
     }
 }
 
-/// Instantaneous information about the VR system. This can be used directly
-/// or to update some persistent state.
+/// Instantaneous information about the VR system retrieved from `VrContext::sync()`.
+/// This can be used directly or to update some persistent state.
 pub struct VrMoment {
     cont: FnvHashMap<u32, ControllerMoment>,
     hmd: Option<HmdMoment>,
@@ -414,7 +414,7 @@ impl Default for ViveController {
 }
 
 impl ViveController {
-    /// Create a simple default state that will be updated by the given controller.
+    /// Create a simple default state that will be updated with data from the given controller.
     pub fn new(reference: ControllerRef) -> ViveController {
         ViveController {
             is: reference,

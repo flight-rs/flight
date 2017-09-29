@@ -16,5 +16,8 @@ fnv = "^1.0.5"
 image = "^0.15.0"
 rust-webvr = "^0.8.1"
 
+[dev-dependencies]
+approx = "^0.1.1"
+
 [workspace]
 members = ["examples/intro"]

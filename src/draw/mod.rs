@@ -6,7 +6,7 @@ use nalgebra::{Transform3};
 use fnv::FnvHashMap;
 use std::cell::RefCell;
 
-use ::{Light, DepthRef, TargetRef, Error, NativeRepr};
+use ::{DepthRef, TargetRef, Error, NativeRepr};
 use ::mesh::{Mesh, Vertex};
 
 #[macro_use]
@@ -21,7 +21,7 @@ mod unishade;
 pub use self::unishade::{UnishadeStyle, UnishadeInputs};
 
 mod pbr;
-pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs};
+pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs, LIGHT_COUNT};
 
 /// The painter is responsible for drawing meshes. Painters 
 /// are instantiated with an associated style which specifies
@@ -43,7 +43,7 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
         })
     }
 
-    /// Add the ability to draw the given primitive. This must be done before a meshes using
+    /// Add the ability to draw the given primitive. This must be done before a mesh using
     /// the primitive is drawn.
     pub fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) -> Result<(), Error> {
         let mut inputs = self.inputs.borrow_mut();
@@ -58,7 +58,7 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
     }
 
     /// Attempt to draw a mesh with the given parameters and model matrix,
-    /// returning Err if something goes wrong.
+    /// returning `Err` if something goes wrong.
     pub fn try_draw<C>(
         &self,
         ctx: &mut DrawParams<R, C>,
@@ -114,7 +114,7 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
         }
     }
 
-    /// Draw a mesh with the given parameters and model matrix, logging any errors
+    /// Draw a mesh with the given parameters and model matrix, logging any errors.
     pub fn draw<C>(
         &self,
         ctx: &mut DrawParams<R, C>,
@@ -128,6 +128,9 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
         }
     }
 
+    /// Configure the draw style. For example, `cfg(|c| c.ambient([1., 0., 0., 1.]))` 
+    /// might set the ambient light color to red. The exact customization available
+    /// depends on the style being used.
     pub fn cfg<F: FnOnce(&mut E::Inputs)>(&self, f: F) {
         f(&mut *self.inputs.borrow_mut())
     }
@@ -135,8 +138,11 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
 
 /// Implements a particular drawing process and visual style.
 pub trait Style<R: Resources>: Sized {
+    /// The mesh vertex type required for drawing
     type Vertex: Vertex;
+    /// The configuration available for this style
     type Inputs: StyleInputs<R>;
+    /// The material type required on meshes
     type Material;
 
     fn new<F: Factory<R> + FactoryExt<R>>(
@@ -173,28 +179,30 @@ pub trait StyleInputs<R: Resources> {
     fn shader_set(&self) -> &ShaderSet<R>;
 }
 
-gfx_defines!{
-    /// Internally used transformation parameters
-    constant TransformBlock {
-        model: [[f32; 4]; 4] = "model",
-        view: [[f32; 4]; 4] = "view",
-        proj: [[f32; 4]; 4] = "proj",
-        eye: [f32; 4] = "eye_pos",
-        clip_offset: f32 = "clip_offset",
+mod defines {
+    use ::{Light, NativeRepr};
+
+    gfx_defines!{
+        constant TransformBlock {
+            model: [[f32; 4]; 4] = "model",
+            view: [[f32; 4]; 4] = "view",
+            proj: [[f32; 4]; 4] = "proj",
+            eye: [f32; 4] = "eye_pos",
+            clip_offset: f32 = "clip_offset",
+        }
+        constant LightBlock {
+            pos: [f32; 4] = "pos",
+            color: [f32; 4] = "color",
+        }
     }
 
-    /// Internally used light parameters
-    constant LightBlock {
-        pos: [f32; 4] = "pos",
-        color: [f32; 4] = "color",
-    }
-}
-
-impl From<Light> for LightBlock {
-    fn from(l: Light) -> LightBlock {
-        LightBlock {
-            pos: l.pos.to_homogeneous().native(),
-            color: l.color,
+    impl From<Light> for LightBlock {
+        fn from(l: Light) -> LightBlock {
+            LightBlock {
+                pos: l.pos.to_homogeneous().native(),
+                color: l.color,
+            }
         }
     }
 }
+use self::defines::*;
