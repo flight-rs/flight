@@ -32,6 +32,7 @@ shader!(shader {
         .define_to("I_NORM", "v_norm")
 });
 
+/// The configuration for unishade rendering
 pub struct UnishadeInputs<R: Resources> {
     shaders: ShaderSet<R>,
     transform: Option<TransformBlock>,
@@ -41,6 +42,7 @@ pub struct UnishadeInputs<R: Resources> {
 }
 
 impl<R: Resources> UnishadeInputs<R> {
+    /// Sets the light and dark colors
     pub fn colors(&mut self, dark: [f32; 4], light: [f32; 4]) {
         self.shade = Some(UnishadeBlock {
             dark: dark,
@@ -54,6 +56,7 @@ impl<R: Resources> StyleInputs<R> for UnishadeInputs<R> {
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
 }
 
+/// Draws objects with very simple lighting: one color on the top and a different color on the bottom
 pub struct UnishadeStyle<R: Resources> {
     pso: PipelineState<R, pl::Meta>,
 }

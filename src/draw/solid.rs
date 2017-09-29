@@ -26,6 +26,7 @@ shader!(shader {
         .define_to("I_COLOR", "v_color")
 });
 
+/// The configuration for solid color rendering
 pub struct SolidInputs<R: Resources> {
     shaders: ShaderSet<R>,
     transform: Option<TransformBlock>,
@@ -37,6 +38,7 @@ impl<R: Resources> StyleInputs<R> for SolidInputs<R> {
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
 }
 
+/// Draws objects in solid colors (without lighting) using the per-vertex color attribute
 pub struct SolidStyle<R: Resources> {
     pso: PipelineState<R, pl::Meta>,
 }

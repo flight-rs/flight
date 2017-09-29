@@ -12,8 +12,9 @@ use std::path::Path;
 
 use ::{Error, Texture};
 use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
-use ::style::PbrMaterial;
+use ::draw::PbrMaterial;
 
+/// Load wavefront OBJ data into an internal mesh object 
 pub fn wavefront_data(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>, Error> {
     let mut verts = Vec::new();
     let mut ind_look = FnvHashMap::default();
@@ -37,10 +38,12 @@ pub fn wavefront_data(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>
     })
 }
 
+/// Load a wavefront obj file into an internal mesh object
 pub fn wavefront_file<P: AsRef<Path>>(path: P) -> Result<MeshSource<VertNT, ()>, Error> {
     wavefront_data(&Obj::load(path.as_ref())?)
 }
 
+/// Load some image data into a GPU-allocated internal texture object
 pub fn image_data<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
     -> Result<Texture<R, T>, Error>
     where
@@ -63,6 +66,7 @@ pub fn image_data<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R
     })
 }
 
+/// A binary pixel format that can be used by the GPU
 pub trait ImageData {
     // TODO: make more efficient (currently requires too much iterating and allocating)
     fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>);
@@ -97,6 +101,8 @@ impl ImageData for u8 {
     }
 }
 
+/// Load a physically rendered object out of a directory. Will load
+///`normal.png`, `albedo.png`, `metalness.png`, `roughness.png`, and `model.obj`.
 pub fn object_directory<R, F, P>(f: &mut F, path: P)
     -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
     where
@@ -142,5 +148,5 @@ pub fn object_directory<R, F, P>(f: &mut F, path: P)
         albedo: albedo,
         metalness: metalness,
         roughness: roughness,
-    }).build(f))
+    }).upload(f))
 }

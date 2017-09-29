@@ -6,9 +6,8 @@ use nalgebra::{self as na, Rotation3, SimilarityMatrix3, Translation3, Point3, P
 
 use lib::{Texture, Light, PbrMesh, Error};
 use lib::mesh::*;
-use lib::context::DrawContext;
 use lib::load;
-use lib::style::{Styler, SolidStyle, PbrStyle, PbrMaterial};
+use lib::draw::{DrawParams, Painter, SolidStyle, PbrStyle, PbrMaterial};
 use lib::vr::{primary, secondary, VrMoment, ViveController};
 
 pub const NEAR_PLANE: f64 = 0.1;
@@ -19,8 +18,8 @@ const PI2: f32 = 2. * PI;
 const DEG: f32 = PI2 / 360.;
 
 pub struct App<R: gfx::Resources> {
-    solid: Styler<R, SolidStyle<R>>,
-    pbr: Styler<R, PbrStyle<R>>,
+    solid: Painter<R, SolidStyle<R>>,
+    pbr: Painter<R, PbrStyle<R>>,
     grid: Mesh<R, VertC, ()>,
     controller_grid: Mesh<R, VertC, ()>,
     controller: PbrMesh<R>,
@@ -87,25 +86,25 @@ fn load_my_simple_object<P, R, F>(f: &mut F, path: P, albedo: [u8; 4])
         albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0x60, 0x60, 0x60, 0xFF])?,
         metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00)?,
         roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20)?,
-    }).build(f))
+    }).upload(f))
 }
 
 impl<R: gfx::Resources> App<R> {
     pub fn new<F: Factory<R> + FactoryExt<R>>(factory: &mut F) -> Result<Self, Error> {
-        // Setup stylers
-        let mut solid = Styler::new(factory)?;
+        // Setup Painters
+        let mut solid = Painter::new(factory)?;
         solid.setup(factory, Primitive::LineList)?;
         solid.setup(factory, Primitive::TriangleList)?;
 
-        let mut pbr: Styler<_, PbrStyle<_>> = Styler::new(factory)?;
+        let mut pbr: Painter<_, PbrStyle<_>> = Painter::new(factory)?;
         pbr.setup(factory, Primitive::TriangleList)?;
 
         // Construct App
         Ok(App {
             solid: solid,
             pbr: pbr,
-            grid: grid_lines(8, 8.).build(factory),
-            controller_grid: grid_lines(2, 0.2).build(factory),
+            grid: grid_lines(8, 8.).upload(factory),
+            controller_grid: grid_lines(2, 0.2).upload(factory),
             controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
             teapot: load::object_directory(factory, "assets/teapot_wood/")?,
             start_time: Instant::now(),
@@ -123,7 +122,7 @@ impl<R: gfx::Resources> App<R> {
 
     pub fn draw<C: gfx::CommandBuffer<R>>(
         &mut self,
-        ctx: &mut DrawContext<R, C>,
+        ctx: &mut DrawParams<R, C>,
         vrm: &VrMoment,
     ) {
         let elapsed = self.start_time.elapsed();

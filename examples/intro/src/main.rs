@@ -20,7 +20,7 @@ use glutin::GlContext;
 
 mod app;
 
-use lib::context;
+use lib::draw;
 use lib::vr::*;
 
 fn main() {
@@ -96,7 +96,7 @@ fn main() {
     };
 
     // setup context
-    let mut ctx = context::DrawContext {
+    let mut ctx = draw::DrawParams {
         encoder: factory.create_command_buffer().into(),
         color: if mock { wcolor } else { surface },
         depth: if mock { wdepth } else { depth },

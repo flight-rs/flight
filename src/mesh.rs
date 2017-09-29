@@ -223,8 +223,11 @@ impl_vertex!(VertNC {
 /// A scheme for selecting vertices to combine into primitives.
 #[derive(Clone)]
 pub enum Indexing {
+    /// A list of vertex indices to make primitives out of
     Inds(Vec<u32>),
+    /// A range of vertices in sequence to make primitives out of
     Range(u32, u32),
+    /// Use all vertices in sequence to make primitives
     All,
 }
 
@@ -237,7 +240,7 @@ pub struct MeshSource<V, M> {
     pub inds: Indexing,
     /// Primitive type
     pub prim: Primitive,
-    /// Material data
+    /// Material/texture data
     pub mat: M,
 }
 
@@ -250,13 +253,13 @@ pub struct Mesh<R: Resources, T: Vertex, M> {
     pub buf: Buffer<R, T>,
     /// Primitive type
     pub prim: Primitive,
-        /// Material data
+    /// Material/texture data
     pub mat: M,
 }
 
 impl<T: Vertex, M> MeshSource<T, M> {
-    /// Transfer this mesh to the GPU.
-    pub fn build<R: Resources, F: FactoryExt<R>>(self, f: &mut F) -> Mesh<R, T, M> {
+    /// Upload this mesh to the GPU.
+    pub fn upload<R: Resources, F: FactoryExt<R>>(self, f: &mut F) -> Mesh<R, T, M> {
         use self::Indexing::*;
 
         let (buf, slice) = match self.inds {
@@ -284,6 +287,7 @@ impl<T: Vertex, M> MeshSource<T, M> {
         }
     }
 
+    /// Set the material of this mesh (usually textures)
     pub fn with_material<N>(self, mat: N) -> MeshSource<T, N> {
         MeshSource {
             verts: self.verts,

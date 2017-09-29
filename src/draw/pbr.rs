@@ -9,12 +9,18 @@ use super::{StyleInputs, Style, LightBlock, TransformBlock};
 use ::mesh::{Primitive, VertNTT};
 use ::{Light, Error, ColorFormat, DepthFormat, TargetRef, DepthRef, Texture};
 
+/// The maximum number of point lights that can be simulated
 pub const LIGHT_COUNT: usize = 4;
 
+/// The collection of mesh textures used by physically based rendering
 pub struct PbrMaterial<R: Resources> {
+    /// Normal map
     pub normal: Texture<R, (R8_G8_B8_A8, Unorm)>,
+    /// Albedo map (base color)
     pub albedo: Texture<R, (R8_G8_B8_A8, Srgb)>,
+    /// Metalness map (sets material to metal or dielectric)
     pub metalness: Texture<R, (R8, Unorm)>,
+    /// Roughness map (Changes shininess/reflection sharpness)
     pub roughness: Texture<R, (R8, Unorm)>,
 }
 
@@ -52,6 +58,7 @@ shader!(shader {
         .define_to("LIGHT_COUNT", LIGHT_COUNT)
 });
 
+/// The configuration for physically based rendering
 pub struct PbrInputs<R: Resources> {
     shaders: ShaderSet<R>,
     transform: Option<TransformBlock>,
@@ -63,6 +70,7 @@ pub struct PbrInputs<R: Resources> {
 }
 
 impl<R: Resources> PbrInputs<R> {
+    /// Sets the point lights present in the scene. Only the first `LIGHT_COUNT` lights will be used.
     pub fn lights(&mut self, lights: &[Light]) {
         let mut all = [LightBlock::from(Light::default()); LIGHT_COUNT];
         for i in 0..lights.len().min(LIGHT_COUNT) {
@@ -71,6 +79,7 @@ impl<R: Resources> PbrInputs<R> {
         self.lights = Some(all);
     }
 
+    /// Sets the ambient light level in the scene
     pub fn ambient(&mut self, c: [f32; 4]) {
         self.params = Some(PbrBlock {
             ambient: c
@@ -85,6 +94,7 @@ impl<R: Resources> StyleInputs<R> for PbrInputs<R> {
     fn shader_set(&self) -> &ShaderSet<R> { &self.shaders }
 }
 
+/// Draws meshes using a physically based rendering pipeline
 pub struct PbrStyle<R: Resources> {
     pso: PipelineState<R, pl::Meta>,
 }

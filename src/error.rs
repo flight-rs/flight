@@ -35,14 +35,16 @@ macro_rules! error_var {
 }
 
 macro_rules! error {
-    ($e:ident($n:ident) {
+    ($(#[$m:meta])*$e:ident($n:ident) {
         $($v:ident($($w:tt)*)),*
     }) => {
+        /// Error type enum
         #[derive(Debug)]
         pub enum $n {
             $($v(error_var!($($w)*))),*
         }
 
+        $(#[$m])*
         #[derive(Debug)]
         pub struct $e {
             pub context: Option<String>,
@@ -62,16 +64,19 @@ macro_rules! error {
     }
 }
 
-error!(Error(ErrorKind) {
-    Gfx(GfxCombinedError),
-    GfxUpdate(UpdateError<usize>),
-    Pipeline(PipelineStateError<String>),
-    Shader(CreateShaderError),
-    ShaderProgram(ProgramError),
-    Image(ImageError),
-    Io(IoError),
-    InvalidPrimitive(-> invalid_primitive(p: Primitive))
-});
+error!(
+    /// Combines all errors that can occur in the flight API
+    Error(ErrorKind) {
+        Gfx(GfxCombinedError),
+        GfxUpdate(UpdateError<usize>),
+        Pipeline(PipelineStateError<String>),
+        Shader(CreateShaderError),
+        ShaderProgram(ProgramError),
+        Image(ImageError),
+        Io(IoError),
+        InvalidPrimitive(-> invalid_primitive(p: Primitive))
+    }
+);
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -91,6 +96,7 @@ impl<T, C> From<(T, C)> for Error
 }
 
 impl Error {
+    /// Add some text explaining the context in which the error occurred
     pub fn context(self, ctx: String) -> Error {
         Error {
             context: Some(ctx),

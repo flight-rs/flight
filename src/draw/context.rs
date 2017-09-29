@@ -3,8 +3,9 @@ use nalgebra::{self as na, Transform3, Point3};
 
 use ::{DepthRef, TargetRef};
 
+/// Parameters that control the rendering of an eye
 #[derive(Copy, Clone)]
-pub struct EyeContext {
+pub struct EyeParams {
     pub eye: Point3<f32>,
     pub view: Transform3<f32>,
     pub proj: Transform3<f32>,
@@ -12,9 +13,9 @@ pub struct EyeContext {
     pub clip: Rect,
 }
 
-impl Default for EyeContext {
-    fn default() -> EyeContext {
-        EyeContext {
+impl Default for EyeParams {
+    fn default() -> EyeParams {
+        EyeParams {
             eye: Point3::origin(),
             view: na::one(),
             proj: na::one(),
@@ -24,10 +25,16 @@ impl Default for EyeContext {
     }
 }
 
-pub struct DrawContext<R: Resources, C: CommandBuffer<R>> {
+/// Parameters to the draw system
+pub struct DrawParams<R: Resources, C: CommandBuffer<R>> {
+    /// The gfx command encoder
     pub encoder: Encoder<R, C>,
+    /// The color draw target
     pub color: TargetRef<R>,
+    /// The depth draw target
     pub depth: DepthRef<R>,
-    pub left: EyeContext,
-    pub right: EyeContext,
+    /// Left eye parameters
+    pub left: EyeParams,
+    /// Right eye parameters
+    pub right: EyeParams,
 }

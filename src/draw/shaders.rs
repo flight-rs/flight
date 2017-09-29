@@ -1,5 +1,5 @@
 macro_rules! static_file {
-    ($p:expr) => ( ::style::shaders::source($p, include_str!($p)) )
+    ($p:expr) => ( ::draw::shaders::source($p, include_str!($p)) )
 }
 
 macro_rules! shader {

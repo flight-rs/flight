@@ -5,24 +5,25 @@ fn assert_layout<A, B>() {
     debug_assert_eq!(align_of::<A>(), align_of::<B>());
 }
 
-pub trait NativeRepr<N: Sized + Copy>: Sized + Copy {
-    fn advanced(nat: N) -> Self { *Self::advanced_ref(&nat) }
-    fn advanced_ref(nat: &N) -> &Self {
-        assert_layout::<N, Self>();
-        unsafe { &*(nat as *const N as *const Self) }
+/// Can convert between complex wrappers and their primitive forms
+pub trait NativeRepr<T: Sized + Copy>: Sized + Copy {
+    fn advanced(nat: T) -> Self { *Self::advanced_ref(&nat) }
+    fn advanced_ref(nat: &T) -> &Self {
+        assert_layout::<T, Self>();
+        unsafe { &*(nat as *const T as *const Self) }
     }
-    fn advanced_mut(nat: &mut N) -> &mut Self {
-        assert_layout::<N, Self>();
-        unsafe { &mut *(nat as *mut N as *mut Self) }
+    fn advanced_mut(nat: &mut T) -> &mut Self {
+        assert_layout::<T, Self>();
+        unsafe { &mut *(nat as *mut T as *mut Self) }
     }
-    fn native(self) -> N { *self.native_ref() }
-    fn native_ref(&self) -> &N {
-        assert_layout::<N, Self>();
-        unsafe { &*(self as *const Self as *const N) }
+    fn native(self) -> T { *self.native_ref() }
+    fn native_ref(&self) -> &T {
+        assert_layout::<T, Self>();
+        unsafe { &*(self as *const Self as *const T) }
     }
-    fn native_mut(&mut self) -> &mut N {
-        assert_layout::<N, Self>();
-        unsafe { &mut *(self as *mut Self as *mut N) }
+    fn native_mut(&mut self) -> &mut T {
+        assert_layout::<T, Self>();
+        unsafe { &mut *(self as *mut Self as *mut T) }
     }
 }
 

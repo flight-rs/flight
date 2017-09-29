@@ -7,34 +7,44 @@ use fnv::FnvHashMap;
 use std::cell::RefCell;
 
 use ::{Light, DepthRef, TargetRef, Error, NativeRepr};
-use ::context::*;
 use ::mesh::{Mesh, Vertex};
 
 #[macro_use]
 mod shaders;
+mod context;
+pub use self::context::*;
 
 mod solid;
 pub use self::solid::{SolidStyle, SolidInputs};
 
 mod unishade;
-pub use self::unishade::{UnishadeStyle, UnishadeBlock, UnishadeInputs};
+pub use self::unishade::{UnishadeStyle, UnishadeInputs};
 
 mod pbr;
-pub use self::pbr::{PbrStyle, PbrBlock, PbrMaterial, PbrInputs};
+pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs};
 
-pub struct Styler<R: Resources, E: Style<R>> {
+/// The painter is responsible for drawing meshes. Painters 
+/// are instantiated with an associated style which specifies
+/// the data required for drawing (vertex type, material params,
+/// configuration) and implements the drawing pipeline. Note that
+/// a painter can only be used with primitive types that have been
+/// passed to `setup`.
+pub struct Painter<R: Resources, E: Style<R>> {
     inputs: RefCell<E::Inputs>,
     map: FnvHashMap<Primitive, E>,
 }
 
-impl<R: Resources, E: Style<R>> Styler<R, E> {
-    pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Result<Styler<R, E>, Error> {
-        Ok(Styler {
+impl<R: Resources, E: Style<R>> Painter<R, E> {
+    /// Create a new painter in the given style and using the given factory. 
+    pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Result<Painter<R, E>, Error> {
+        Ok(Painter {
             inputs: RefCell::new(E::init(f)?),
             map: Default::default(),
         })
     }
 
+    /// Add the ability to draw the given primitive. This must be done before a meshes using
+    /// the primitive is drawn.
     pub fn setup<F: Factory<R> + FactoryExt<R>>(&mut self, f: &mut F, prim: Primitive) -> Result<(), Error> {
         let mut inputs = self.inputs.borrow_mut();
         use ::std::collections::hash_map::Entry::*;
@@ -47,9 +57,11 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         Ok(())
     }
 
+    /// Attempt to draw a mesh with the given parameters and model matrix,
+    /// returning Err if something goes wrong.
     pub fn try_draw<C>(
         &self,
-        ctx: &mut DrawContext<R, C>,
+        ctx: &mut DrawParams<R, C>,
         model: Transform3<f32>,
         mesh: &Mesh<R, E::Vertex, E::Material>,
     )
@@ -102,9 +114,10 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
         }
     }
 
+    /// Draw a mesh with the given parameters and model matrix, logging any errors
     pub fn draw<C>(
         &self,
-        ctx: &mut DrawContext<R, C>,
+        ctx: &mut DrawParams<R, C>,
         model: Transform3<f32>,
         mesh: &Mesh<R, E::Vertex, E::Material>,
     )
@@ -120,6 +133,7 @@ impl<R: Resources, E: Style<R>> Styler<R, E> {
     }
 }
 
+/// Implements a particular drawing process and visual style.
 pub trait Style<R: Resources>: Sized {
     type Vertex: Vertex;
     type Inputs: StyleInputs<R>;
@@ -151,12 +165,16 @@ pub trait Style<R: Resources>: Sized {
         where C: CommandBuffer<R>;
 }
 
+/// Required configuration options for a `Style`
 pub trait StyleInputs<R: Resources> {
+    /// Transformation matrices and eye parameters
     fn transform(&mut self, block: TransformBlock);
+    /// The set of shaders used by the styler
     fn shader_set(&self) -> &ShaderSet<R>;
 }
 
 gfx_defines!{
+    /// Internally used transformation parameters
     constant TransformBlock {
         model: [[f32; 4]; 4] = "model",
         view: [[f32; 4]; 4] = "view",
@@ -165,6 +183,7 @@ gfx_defines!{
         clip_offset: f32 = "clip_offset",
     }
 
+    /// Internally used light parameters
     constant LightBlock {
         pos: [f32; 4] = "pos",
         color: [f32; 4] = "color",

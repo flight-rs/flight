@@ -9,10 +9,13 @@ extern crate fnv;
 extern crate image;
 extern crate rust_webvr as webvr;
 
-pub mod style;
+/// Mesh drawing
+pub mod draw;
+/// Asset loading
 pub mod load;
+/// Mesh specification and upload
 pub mod mesh;
-pub mod context;
+/// VR hardware interface
 pub mod vr;
 
 #[macro_use]
@@ -27,13 +30,20 @@ use gfx::handle::*;
 use gfx::format::*;
 use nalgebra::{Point3};
 
+/// The pixel format of color drawing targets
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
+/// The pixel format of depth drawing targets
 pub type DepthFormat = (D24_S8, Unorm);
+/// Reference to a GPU color target
 pub type TargetRef<R> = RenderTargetView<R, ColorFormat>;
+/// Reference to a GPU depth target
 pub type DepthRef<R> = DepthStencilView<R, DepthFormat>;
+/// The result of compiling and linking shader programs
 pub type ShaderResult<R> = Result<gfx::ShaderSet<R>, CreateShaderError>;
-pub type PbrMesh<R> = mesh::Mesh<R, mesh::VertNTT, style::PbrMaterial<R>>;
+/// A mesh that can be physically (realistically) rendered
+pub type PbrMesh<R> = mesh::Mesh<R, mesh::VertNTT, draw::PbrMaterial<R>>;
 
+/// Parameters for a point light source
 #[derive(Copy, Debug, Clone)]
 pub struct Light {
     pub pos: Point3<f32>,
@@ -49,6 +59,7 @@ impl Default for Light {
     }
 }
 
+/// Internal GPU-allocated texture object
 #[derive(Clone)]
 pub struct Texture<R, T>
     where R: gfx::Resources, T: TextureFormat
