@@ -117,6 +117,7 @@ $RECYCLE.BIN/
 /target/
 **/*.rs.bk
 **/*.rs.fmt
+Cargo.lock
 
 # Dynamic lib files
 examples/**/*.pdb
