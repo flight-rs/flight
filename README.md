@@ -5,7 +5,7 @@
       <img src="https://img.shields.io/travis/CSM-Dream-Team/flight/master.svg?style=flat-square" alt="Travis Build Status">
   </a>
   <a href="https://csm-dream-team.github.io/flight/">
-      <img src="https://img.shields.io/badge/doc-latest-blue.svg?style=flat-square" alt="Rustdocs">
+      <img src="https://csm-dream-team.github.io/flight/doc_shield.svg" alt="Rustdocs">
   </a>
   <img src="https://img.shields.io/github/license/CSM-Dream-Team/flight.svg?style=flat-square" alt="License">
   <br>
