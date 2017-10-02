@@ -14,7 +14,7 @@ log = "^0.3.8"
 obj = "^0.8.0"
 fnv = "^1.0.5"
 image = "^0.15.0"
-rust-webvr = "0.7.0"
+rust-webvr = { git = "https://github.com/samsartor/rust-webvr" }
 
 [dev-dependencies]
 approx = "^0.1.1"
