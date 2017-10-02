@@ -50,49 +50,61 @@ gfx_defines!{
 
 /// A type that can be used as a vertex.
 pub trait Vertex: traits::Pod + pso::buffer::Structure<Format> {
+    /// Get the vertex's position
     fn pos(&self) -> &Point3<f32>;
+    /// Change the vertex's position
     fn mut_pos(&mut self) -> &mut Point3<f32>;
 }
 
 /// A vertex that can have a norm attribute added.
 pub trait WithNorm: Vertex {
     type With: HasNorm;
+    /// Add a normal vector to this vertex's attributes
     fn with_norm(self, norm: Vector3<f32>) -> Self::With;
 }
 
 /// A vertex with a norm component.
 pub trait HasNorm: Vertex {
+    /// Get the vertex's normal vector
     fn norm(&self) -> &Vector3<f32>;
+    /// Change the vertex's normal vector
     fn mut_norm(&mut self) -> &mut Vector3<f32>;
 }
 
 /// A vertex that can have a color attribute added.
 pub trait WithColor: Vertex {
     type With: HasColor;
+    /// Add a color to this vertex's attributes
     fn with_color(self, color: [f32; 3]) -> Self::With;
 }
 
 /// A vertex with a color component.
 pub trait HasColor: Vertex {
+    /// Get the vertex's color
     fn color(&self) -> &[f32; 3];
+    /// Change the vertex's color
     fn mut_color(&mut self) -> &mut [f32; 3];
 }
 
 /// A vertex that can have a tex attribute added.
 pub trait WithTex: Vertex {
     type With: HasTex;
+    /// Add a texture or UV coordinate to this vertex's attributes
     fn with_tex(self, tex: Point2<f32>) -> Self::With;
 }
 
 /// A vertex with a tex component.
 pub trait HasTex: Vertex {
+    /// Get the vertex's texture or UV coordinates
     fn tex(&self) -> &Point2<f32>;
+    /// Change the vertex's texture or UV coordinates
     fn mut_tex(&mut self) -> &mut Point2<f32>;
 }
 
 /// A vertex that can have tan and bitan attributes added.
 pub trait WithTan: Vertex {
     type With: HasTan;
+    /// Add tangent and bitangent vectors to this vertex's attributes
     fn with_tan(self, tan: Vector3<f32>, bitan: Vector3<f32>) -> Self::With;
 }
 
@@ -231,7 +243,10 @@ pub enum Indexing {
     All,
 }
 
-/// A mesh description that must be sent to the GPU before it can be drawn.
+/// A mesh storage object and builder that sent as drawable geometry to the GPU.
+/// Once uploaded, this mesh can only be rendered using a `Painter` whose 
+/// associated style supports the given vertex and material type (`<V, M>`).
+/// In addition, the painter must be setup for this mesh's primitive type.
 #[derive(Clone)]
 pub struct MeshSource<V, M> {
     /// Vertices
@@ -244,7 +259,10 @@ pub struct MeshSource<V, M> {
     pub mat: M,
 }
 
-/// A reference to a GPU mesh object that can be drawn.
+/// A reference to a GPU mesh object that can be drawn by a `Painter` supporting the
+/// associated resource, vertex, material, and primitive combination. The memory cost
+/// of this object is negligible, since  (unlike `MeshSource`) it is a cloneable 
+/// reference to GPU allocated resources.
 #[derive(Clone)]
 pub struct Mesh<R: Resources, T: Vertex, M> {
     /// Reference to slice object (index buffer or range)
@@ -287,7 +305,7 @@ impl<T: Vertex, M> MeshSource<T, M> {
         }
     }
 
-    /// Set the material of this mesh (usually textures)
+    /// Set the material of this mesh (usually just textures)
     pub fn with_material<N>(self, mat: N) -> MeshSource<T, N> {
         MeshSource {
             verts: self.verts,
@@ -299,6 +317,7 @@ impl<T: Vertex, M> MeshSource<T, M> {
 }
 
 impl<V: WithNorm, M> MeshSource<V, M> {
+    /// Adds the given normal vector to each vertex's attributes
     pub fn with_normal(self, n: Vector3<f32>) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_norm(n.into())).collect(),
@@ -310,6 +329,7 @@ impl<V: WithNorm, M> MeshSource<V, M> {
 }
 
 impl<V: WithColor, M> MeshSource<V, M> {
+    /// Adds the given color to each vertex's attributes
     pub fn with_color(self, c: [f32; 3]) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_color(c)).collect(),
@@ -321,6 +341,7 @@ impl<V: WithColor, M> MeshSource<V, M> {
 }
 
 impl<V: WithTex, M> MeshSource<V, M> {
+    /// Adds the given texture or UV coordinates to each vertex's attributes
     pub fn with_tex(self, c: Point2<f32>) -> MeshSource<V::With, M> {
         MeshSource {
             verts: self.verts.into_iter().map(|v| v.with_tex(c)).collect(),

@@ -110,7 +110,7 @@ impl<R: gfx::Resources> App<R> {
             start_time: Instant::now(),
             primary: ViveController {
                 is: primary(),
-                pad: Point2::new(1., 0.),
+                pad: Point2::new(0., 1.),
                 .. Default::default()
             },
             secondary: ViveController {

@@ -62,7 +62,8 @@ impl Default for Light {
     }
 }
 
-/// Internal GPU-allocated texture object
+/// GPU-allocated texture object. Since this is just a reference to assets stored on the GPU, 
+/// its memory footprint is negligible and it can be cloned freely.
 #[derive(Clone)]
 pub struct Texture<R, T>
     where R: gfx::Resources, T: TextureFormat
@@ -72,11 +73,12 @@ pub struct Texture<R, T>
 }
 
 impl<R: gfx::Resources, T: TextureFormat> Texture<R, T> {
+    /// Convert this texture reference to an internally recognized tuple form
     pub fn into_tuple(self) -> (ShaderResourceView<R, T::View>, Sampler<R>) {
         (self.buffer, self.sampler)
     }
 
-    /// Build a single-pixel (single value) texture
+    /// Build a single-pixel (single value) texture. The overhead on this might still be fairly high, even though the memory usage is minimal.
     pub fn uniform_value<F>(f: &mut F, val: <<T as Formatted>::Surface as SurfaceTyped>::DataType)
         -> Result<Self, Error>
         where F: gfx::Factory<R>
