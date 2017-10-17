@@ -13,6 +13,7 @@ use ::{Light, Error, ColorFormat, DepthFormat, TargetRef, DepthRef, Texture};
 pub const LIGHT_COUNT: usize = 4;
 
 /// The collection of mesh textures used by physically based rendering
+#[derive(Clone)]
 pub struct PbrMaterial<R: Resources> {
     /// Normal map
     pub normal: Texture<R, (R8_G8_B8_A8, Unorm)>,

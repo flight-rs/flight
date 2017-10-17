@@ -12,7 +12,8 @@
   <strong><a href="https://csm-dream-team.github.io/flight/">Documentation</a></strong>
 </p>
 
-Flight is a library for creating advanced VR applications in the Rust programming language.
+Flight is a library for creating advanced VR applications in the Rust
+programming language.
 
 Authors:
 
