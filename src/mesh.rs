@@ -5,6 +5,7 @@ use gfx::traits::FactoryExt;
 use gfx::handle::Buffer;
 use nalgebra::{self as na, Point3, Point2, Vector3};
 use ::NativeRepr;
+use std::f32::EPSILON;
 
 gfx_defines!{
     /// A vertex that includes pos only.
@@ -369,19 +370,20 @@ fn add_tri_tan<T: HasTan + HasTex>(a: &mut T, b: &mut T, c: &mut T) {
         let delta_uv1 = uv2 - uv1;
         let delta_uv2 = uv3 - uv1;
 
-        let f = 1.0 / (delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y);
+        let f = delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y;
+        if f <= EPSILON { return }
 
-        let tan = Vector3::new(
-            f * (delta_uv2.y * edge1.x - delta_uv1.y * edge2.x),
-            f * (delta_uv2.y * edge1.y - delta_uv1.y * edge2.y),
-            f * (delta_uv2.y * edge1.z - delta_uv1.y * edge2.z),
-        ).normalize();
+        let tan = (Vector3::new(
+            delta_uv2.y * edge1.x - delta_uv1.y * edge2.x,
+            delta_uv2.y * edge1.y - delta_uv1.y * edge2.y,
+            delta_uv2.y * edge1.z - delta_uv1.y * edge2.z,
+        ) / f).normalize();
 
-        let bitan = Vector3::new(
-            f * (-delta_uv2.x * edge1.x + delta_uv1.x * edge2.x),
-            f * (-delta_uv2.x * edge1.y + delta_uv1.x * edge2.y),
-            f * (-delta_uv2.x * edge1.z + delta_uv1.x * edge2.z),
-        ).normalize();
+        let bitan = (Vector3::new(
+            -delta_uv2.x * edge1.x + delta_uv1.x * edge2.x,
+            -delta_uv2.x * edge1.y + delta_uv1.x * edge2.y,
+            -delta_uv2.x * edge1.z + delta_uv1.x * edge2.z,
+        ) / f).normalize();
 
         (tan, bitan)
     };

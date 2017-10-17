@@ -1,4 +1,4 @@
-use nalgebra::{self as na, Transform3, Vector3, Point3, Vector2, Point2, Isometry3, IsometryMatrix3, Quaternion, Translation3, Unit};
+use nalgebra::{self as na, Transform3, Vector3, Point3, Vector2, Point2, Isometry3, Quaternion, Translation3, Unit};
 use webvr::*;
 use draw::EyeParams;
 use fnv::FnvHashMap;
@@ -141,7 +141,7 @@ impl VrContext {
                 moment.hmd = Some(HmdMoment {
                     name: data.display_name.clone(),
                     size: (w, h),
-                    pose: na::convert(pose),
+                    pose: pose,
                     left: EyeParams {
                         eye: left_view.try_inverse().unwrap() * Point3::origin(),
                         view: left_view,
@@ -187,7 +187,7 @@ impl VrContext {
                 moment.cont.insert(state.gamepad_id, ControllerMoment {
                     id: state.gamepad_id,
                     name: data.name.clone(),
-                    pose: na::convert(pose),
+                    pose: pose,
                     axes: state.axes.clone(),
                     buttons: state.buttons.clone(),
                 });
@@ -300,7 +300,7 @@ pub type ButtonMoment = VRGamepadButton;
 /// A device that provides instantaneous position and orientation information.
 pub trait Trackable {
     /// Get the location and orientation of the device.
-    fn pose(&self) -> IsometryMatrix3<f32>;
+    fn pose(&self) -> Isometry3<f32>;
 
     /// Get the direction of the device's x axis.
     fn x_dir(&self) -> Vector3<f32> { self.pose() * Vector3::x() }
@@ -323,7 +323,7 @@ pub struct HmdMoment {
     /// The resolution of the HMD
     pub size: (u32, u32),
     /// The location and orientation of the HMD
-    pub pose: IsometryMatrix3<f32>,
+    pub pose: Isometry3<f32>,
     /// The drawing parameters for the left eye
     pub left: EyeParams,
     /// The drawing parameters for the right eye
@@ -331,7 +331,7 @@ pub struct HmdMoment {
 }
 
 impl Trackable for HmdMoment {
-    fn pose(&self) -> IsometryMatrix3<f32> {
+    fn pose(&self) -> Isometry3<f32> {
         self.pose
     }
 }
@@ -344,7 +344,7 @@ pub struct ControllerMoment {
     /// The textual name of the controller
     pub name: String,
     /// The location and orientation of the controller
-    pub pose: IsometryMatrix3<f32>,
+    pub pose: Isometry3<f32>,
     /// The state of the floating point inputs on the controller
     pub axes: Vec<f64>,
     /// The state of the button inputs on the controller
@@ -359,7 +359,7 @@ impl ControllerMoment {
 }
 
 impl Trackable for ControllerMoment {
-    fn pose(&self) -> IsometryMatrix3<f32> {
+    fn pose(&self) -> Isometry3<f32> {
         self.pose
     }
 }
@@ -379,9 +379,9 @@ pub struct ViveController {
     /// The controller connection status.
     pub connected: bool,
     /// The pose of the controller
-    pub pose: IsometryMatrix3<f32>,
+    pub pose: Isometry3<f32>,
     /// The transformation of the controller between the second most and most recent updates
-    pub pose_delta: IsometryMatrix3<f32>,
+    pub pose_delta: Isometry3<f32>,
     /// How far is the trigger pulled
     pub trigger: f64,
     /// The last touched location on the circular pad
@@ -463,7 +463,7 @@ impl ViveController {
 }
 
 impl Trackable for ViveController {
-    fn pose(&self) -> IsometryMatrix3<f32> {
+    fn pose(&self) -> Isometry3<f32> {
         self.pose
     }
 }

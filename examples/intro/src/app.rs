@@ -2,7 +2,7 @@ use std::path::Path;
 use std::time::Instant;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
-use nalgebra::{self as na, Rotation3, SimilarityMatrix3, Translation3, Point3, Point2, Vector3};
+use nalgebra::{self as na, UnitQuaternion, Similarity3, Translation3, Point3, Point2, Vector3};
 
 use lib::{Texture, Light, PbrMesh, Error};
 use lib::mesh::*;
@@ -173,18 +173,18 @@ impl<R: gfx::Resources> App<R> {
 
         // Draw teapot
         let tearot =
-            Rotation3::from_axis_angle(&Vector3::x_axis(), (t * 0.7).sin() * 10. * DEG)
-            * Rotation3::from_axis_angle(&Vector3::z_axis(), (t * 0.8).cos() * 15. * DEG)
-            * Rotation3::from_axis_angle(&Vector3::y_axis(), t * 60. * DEG);
+            UnitQuaternion::from_axis_angle(&Vector3::x_axis(), (t * 0.7).sin() * 10. * DEG)
+            * UnitQuaternion::from_axis_angle(&Vector3::z_axis(), (t * 0.8).cos() * 15. * DEG)
+            * UnitQuaternion::from_axis_angle(&Vector3::y_axis(), t * 60. * DEG);
 
         let teamat = if self.primary.connected {
-            na::convert(self.primary.pose * SimilarityMatrix3::from_parts(
+            na::convert(self.primary.pose * Similarity3::from_parts(
                 Translation3::new(0., 0., -0.25),
                 tearot,
                 0.15 * self.primary.pad_theta().abs() as f32 / PI,		
             ))
         } else {
-            vrm.stage * SimilarityMatrix3::from_parts(
+            vrm.stage * Similarity3::from_parts(
                 Translation3::new(1., 0., 1.),
                 tearot,
                 1.,
