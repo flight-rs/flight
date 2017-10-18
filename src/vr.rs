@@ -435,7 +435,11 @@ impl ViveController {
             let (x, y) = (cont.axes[0], cont.axes[1]);
             if x != 0. || y != 0. {
                 let pad = Point2::new(x, y);
-                self.pad_delta = pad - self.pad;
+                if self.pad_touched {
+                    self.pad_delta = pad - self.pad;
+                } else {
+                    self.pad_delta = na::zero();
+                }
                 self.pad = pad;
                 self.pad_touched = true;
             } else { 
