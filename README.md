@@ -1,15 +1,15 @@
 # flight
 
 <p align="center">
-  <a href="https://travis-ci.org/CSM-Dream-Team/flight">
-      <img src="https://img.shields.io/travis/CSM-Dream-Team/flight/master.svg?style=flat-square" alt="Travis Build Status">
+  <a href="https://travis-ci.org/flight-rs/flight">
+      <img src="https://img.shields.io/travis/flight-rs/flight/master.svg?style=flat-square" alt="Travis Build Status">
   </a>
-  <a href="https://csm-dream-team.github.io/flight/">
-      <img src="https://csm-dream-team.github.io/flight/doc_shield.svg" alt="Rustdocs">
+  <a href="https://flight-rs.github.io/flight/">
+      <img src="https://flight-rs.github.io/flight/doc_shield.svg" alt="Rustdocs">
   </a>
-  <img src="https://img.shields.io/github/license/CSM-Dream-Team/flight.svg?style=flat-square" alt="License">
+  <img src="https://img.shields.io/github/license/flight-rs/flight.svg?style=flat-square" alt="License">
   <br>
-  <strong><a href="https://csm-dream-team.github.io/flight/">Documentation</a></strong>
+  <strong><a href="https://flight-rs.github.io/flight/">Documentation</a></strong>
 </p>
 
 Flight is a library for creating advanced VR applications in the Rust
