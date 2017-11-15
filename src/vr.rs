@@ -429,7 +429,7 @@ impl ViveController {
     /// Update the controller state using the provided instantaneous information.
     pub fn update(&mut self, mom: &VrMoment) -> Result<(), ()> {
         if let Some(cont) = mom.controller(self.is) {
-            if cont.axes.len() != 3 || cont.buttons.len() != 2 { return Err(()) }
+            if cont.axes.len() < 3 || cont.buttons.len() < 2 { return Err(()) }
 
             self.connected = true;
 
