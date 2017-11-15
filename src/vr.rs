@@ -373,6 +373,7 @@ fn pose_transform(ctr: &VRPose) -> Option<Isometry3<f32>> {
 }
 
 /// A structure for tracking the state of a vive controller.
+#[derive(Clone, Debug)]
 pub struct ViveController {
     /// The controller that updates this state object
     pub is: ControllerRef,
@@ -384,6 +385,8 @@ pub struct ViveController {
     pub pose_delta: Isometry3<f32>,
     /// How far is the trigger pulled
     pub trigger: f64,
+    /// The change in the trigger between the second most and most recent updates
+    pub trigger_delta: f64,
     /// The last touched location on the circular pad
     pub pad: Point2<f64>,
     /// The change in touch location on the circular pad between the second most and most recent updates
@@ -404,6 +407,7 @@ impl Default for ViveController {
             pose: na::one(),
             pose_delta: na::one(),
             trigger: 0.,
+            trigger_delta: 0.,
             pad: Point2::origin(),
             pad_delta: na::zero(),
             pad_touched: false,
@@ -447,6 +451,7 @@ impl ViveController {
                 self.pad_delta = na::zero();
             }
 
+            self.trigger_delta = cont.axes[2] - self.trigger;
             self.trigger = cont.axes[2];
             self.menu = cont.buttons[0].pressed;
             self.grip = cont.buttons[1].pressed;

@@ -276,6 +276,18 @@ pub struct Mesh<R: Resources, T: Vertex, M> {
     pub mat: M,
 }
 
+impl<R: Resources, T: Vertex, M> Mesh<R, T, M> {
+    /// Set the material of this mesh (usually just textures)
+    pub fn with_material<N>(self, mat: N) -> Mesh<R, T, N> {
+        Mesh {
+            slice: self.slice,
+            buf: self.buf,
+            prim: self.prim,
+            mat: mat,
+        }
+    }
+}
+
 impl<T: Vertex, M> MeshSource<T, M> {
     /// Upload this mesh to the GPU.
     pub fn upload<R: Resources, F: FactoryExt<R>>(self, f: &mut F) -> Mesh<R, T, M> {
