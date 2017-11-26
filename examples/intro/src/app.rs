@@ -8,7 +8,7 @@ use lib::{Texture, Light, PbrMesh, Error};
 use lib::mesh::*;
 use lib::load;
 use lib::draw::{DrawParams, Painter, SolidStyle, PbrStyle, PbrMaterial};
-use lib::vr::{primary, secondary, VrMoment, ViveController};
+use lib::vr::{primary, secondary, VrMoment, MappedController, Trackable};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
@@ -22,11 +22,12 @@ pub struct App<R: gfx::Resources> {
     pbr: Painter<R, PbrStyle<R>>,
     grid: Mesh<R, VertC, ()>,
     controller_grid: Mesh<R, VertC, ()>,
+    arrow: Mesh<R, VertC, ()>,
     controller: PbrMesh<R>,
     teapot: PbrMesh<R>,
     start_time: Instant,
-    primary: ViveController,
-    secondary: ViveController,
+    primary: MappedController,
+    secondary: MappedController,
 }
 
 fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
@@ -76,6 +77,22 @@ fn grid_lines(count: u32, size: f32) -> MeshSource<VertC, ()> {
     }
 }
 
+fn arrow() -> MeshSource<VertC, ()> {
+    MeshSource {
+        verts: vec![
+            VertC { pos: [0., 0., 0.], color: [0., 0., 0.] },
+            VertC { pos: [0., 0., 1.], color: [0., 0., 0.] },
+            VertC { pos: [0.1, 0., 0.9], color: [0., 0., 0.] },
+            VertC { pos: [0., 0., 1.], color: [0., 0., 0.] },
+            VertC { pos: [-0.1, 0., 0.9], color: [0., 0., 0.] },
+            VertC { pos: [0., 0., 1.], color: [0., 0., 0.] },
+        ],
+        inds: Indexing::All,
+        prim: Primitive::LineList,
+        mat: (),
+    }
+}
+
 fn load_my_simple_object<P, R, F>(f: &mut F, path: P, albedo: [u8; 4])
     -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
     where P: AsRef<Path>, R: gfx::Resources, F: gfx::Factory<R>
@@ -105,15 +122,16 @@ impl<R: gfx::Resources> App<R> {
             pbr: pbr,
             grid: grid_lines(8, 8.).upload(factory),
             controller_grid: grid_lines(2, 0.2).upload(factory),
+            arrow: arrow().upload(factory),
             controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
             teapot: load::object_directory(factory, "assets/teapot_wood/")?,
             start_time: Instant::now(),
-            primary: ViveController {
+            primary: MappedController {
                 is: primary(),
                 pad: Point2::new(0., 1.),
                 .. Default::default()
             },
-            secondary: ViveController {
+            secondary: MappedController {
                 is: secondary(),
                 .. Default::default()
             },
@@ -196,6 +214,29 @@ impl<R: gfx::Resources> App<R> {
         for cont in vrm.controllers() {
             self.solid.draw(ctx, na::convert(cont.pose), &self.controller_grid);
             self.pbr.draw(ctx, na::convert(cont.pose), &self.controller);
+        }
+
+        for cont in &[&self.primary, &self.secondary] {
+            let scale = na::norm(&cont.lin_vel);
+            if scale > ::std::f32::EPSILON {
+                let mat = Similarity3::new_observer_frame(
+                    &cont.origin(),
+                    &(cont.origin() + cont.lin_vel),
+                    &Vector3::y(),
+                    scale,
+                );
+                self.solid.draw(ctx, na::convert(mat), &self.arrow);
+            }
+            let scale = na::norm(&cont.ang_vel) / 6.28;
+            if scale > ::std::f32::EPSILON {
+                let mat = Similarity3::new_observer_frame(
+                    &cont.origin(),
+                    &(cont.origin() + cont.ang_vel),
+                    &Vector3::y(),
+                    scale,
+                );
+                self.solid.draw(ctx, na::convert(mat), &self.arrow);
+            }
         }
     }
 }

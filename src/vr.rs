@@ -118,6 +118,7 @@ impl VrContext {
             exit: self.exit,
             paused: self.paused,
             new_controllers: new_controllers,
+            timestamp: 0.,
         };
         {
             let disp = self.disp.borrow();
@@ -125,6 +126,7 @@ impl VrContext {
             let state = disp.synced_frame_data(self.near, self.far);
             let (w, h) = size_from_data(&data);
 
+            moment.timestamp = state.timestamp / 1000.;
             moment.stage = if let Some(ref stage) = data.stage_parameters {
                 Transform3::upgrade(stage.sitting_to_standing_transform)
                     .try_inverse().unwrap_or(Transform3::identity())
@@ -214,6 +216,8 @@ pub struct VrMoment {
     pub paused: bool,
     /// References to controllers that have connected since the last sync
     pub new_controllers: Vec<ControllerRef>,
+    /// Relative time of this moment (seconds)
+    pub timestamp: f64,
 }
 
 impl VrMoment {
@@ -372,15 +376,23 @@ fn pose_transform(ctr: &VRPose) -> Option<Isometry3<f32>> {
     Some(Isometry3::from_parts(pos, or))
 }
 
-/// A structure for tracking the state of a vive controller.
+/// A structure for tracking the state of a mapped controller.
 #[derive(Clone, Debug)]
-pub struct ViveController {
+pub struct MappedController {
     /// The controller that updates this state object
     pub is: ControllerRef,
+    /// Time of last update
+    pub last_timestamp: Option<f64>,
+    /// Time since last update in seconds
+    pub dt: f64,
     /// The controller connection status.
     pub connected: bool,
     /// The pose of the controller
     pub pose: Isometry3<f32>,
+    /// The linear velocity of the controller
+    pub lin_vel: Vector3<f32>,
+    /// The rotational axis of the controller multiplied by the rotation velocity (rad/s)
+    pub ang_vel: Vector3<f32>,
     /// The transformation of the controller between the second most and most recent updates
     pub pose_delta: Isometry3<f32>,
     /// How far is the trigger pulled
@@ -399,12 +411,16 @@ pub struct ViveController {
     pub grip: bool,
 }
 
-impl Default for ViveController {
+impl Default for MappedController {
     fn default() -> Self {
-        ViveController {
+        MappedController {
             is: primary(),
+            last_timestamp: None,
+            dt: 0.,
             connected: false,
             pose: na::one(),
+            lin_vel: na::zero(),
+            ang_vel: na::zero(),
             pose_delta: na::one(),
             trigger: 0.,
             trigger_delta: 0.,
@@ -417,10 +433,10 @@ impl Default for ViveController {
     }
 }
 
-impl ViveController {
+impl MappedController {
     /// Create a simple default state that will be updated with data from the given controller.
-    pub fn new(reference: ControllerRef) -> ViveController {
-        ViveController {
+    pub fn new(reference: ControllerRef) -> MappedController {
+        MappedController {
             is: reference,
             .. Default::default()
         }
@@ -432,7 +448,15 @@ impl ViveController {
             if cont.axes.len() < 3 || cont.buttons.len() < 2 { return Err(()) }
 
             self.connected = true;
+            self.dt = self.last_timestamp.map(|t| mom.timestamp - t).unwrap_or(0.);
+            self.last_timestamp = Some(mom.timestamp);
 
+            if self.dt > ::std::f64::EPSILON {
+                let lin_delta = cont.pose.translation.vector - self.pose.translation.vector;
+                let ang_delta = (cont.pose.rotation * self.pose.rotation.inverse()).scaled_axis();
+                self.lin_vel = 0.9 * self.lin_vel + 0.1 * lin_delta / self.dt as f32;
+                self.ang_vel = 0.9 * self.ang_vel + 0.1 * ang_delta / self.dt as f32;
+            }
             self.pose_delta = cont.pose * self.pose.inverse();
             self.pose = cont.pose;
 
@@ -456,11 +480,11 @@ impl ViveController {
             self.menu = cont.buttons[0].pressed;
             self.grip = cont.buttons[1].pressed;
         } else {
-            self.pad_touched = false;
-            self.menu = false;
-            self.grip = false;
-            self.trigger = 0.;
-            self.connected = false;
+            *self = MappedController {
+                is: self.is,
+                pose: self.pose,
+                .. Default::default()
+            };
         }
         Ok(())
     }
@@ -471,7 +495,7 @@ impl ViveController {
     }
 }
 
-impl Trackable for ViveController {
+impl Trackable for MappedController {
     fn pose(&self) -> Isometry3<f32> {
         self.pose
     }
