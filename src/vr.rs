@@ -1,4 +1,4 @@
-use nalgebra::{self as na, Transform3, Vector3, Point3, Vector2, Point2, Isometry3, Quaternion, Translation3, Unit};
+use nalgebra::{self as na, Similarity3, Transform3, Matrix4, Vector3, Point3, Vector2, Point2, Isometry3, Quaternion, Translation3, Unit};
 use webvr::*;
 use draw::EyeParams;
 use fnv::FnvHashMap;
@@ -101,7 +101,7 @@ impl VrContext {
                 VREvent::Display(VRDisplayEvent::Pause(_)) => self.paused = true,
                 VREvent::Display(VRDisplayEvent::Resume(_)) => self.paused = false,
                 VREvent::Display(VRDisplayEvent::Exit(_)) => self.exit = true,
-                VREvent::Gamepad(VRGamepadEvent::Connect(_, state)) => 
+                VREvent::Gamepad(VRGamepadEvent::Connect(_, state)) =>
                     new_controllers.push(ControllerRef::Indexed(state.gamepad_id)),
                 _ => (),
             }
@@ -115,6 +115,7 @@ impl VrContext {
             tertiary: None,
             layer: self.layer.clone(),
             stage: na::one(),
+            inverse_stage: na::one(),
             exit: self.exit,
             paused: self.paused,
             new_controllers: new_controllers,
@@ -127,26 +128,25 @@ impl VrContext {
             let (w, h) = size_from_data(&data);
 
             moment.timestamp = state.timestamp / 1000.;
-            moment.stage = if let Some(ref stage) = data.stage_parameters {
-                Transform3::upgrade(stage.sitting_to_standing_transform)
-                    .try_inverse().unwrap_or(Transform3::identity())
-            } else {
-                Transform3::identity()
-            };
+            moment.inverse_stage = data.stage_parameters
+                .map(|stage| Matrix4::upgrade(stage.sitting_to_standing_transform))
+                .and_then(|stage| na::try_convert(stage))
+                .unwrap_or(Similarity3::identity());
+            moment.stage = moment.inverse_stage.inverse();
 
             let left_view = Transform3::upgrade(state.left_view_matrix);
             let right_view = Transform3::upgrade(state.right_view_matrix);
             let left_projection = Transform3::upgrade(state.left_projection_matrix);
             let right_projection = Transform3::upgrade(state.right_projection_matrix);
 
-            if let (Some(pose), true) = (pose_transform(&state.pose), data.connected) {
+            if let (Some(pose), true) = (pose_transform(&state.pose, &moment.inverse_stage), data.connected) {
                 moment.hmd = Some(HmdMoment {
                     name: data.display_name.clone(),
                     size: (w, h),
                     pose: pose,
                     left: EyeParams {
-                        eye: left_view.try_inverse().unwrap() * Point3::origin(),
-                        view: left_view,
+                        eye: moment.inverse_stage * left_view.try_inverse().unwrap() * Point3::origin(),
+                        view: left_view * moment.stage,
                         proj: left_projection,
                         clip_offset: -0.5,
                         clip: Rect {
@@ -157,8 +157,8 @@ impl VrContext {
                         },
                     },
                     right: EyeParams {
-                        eye: right_view.try_inverse().unwrap() * Point3::origin(),
-                        view: right_view,
+                        eye: moment.inverse_stage * right_view.try_inverse().unwrap() * Point3::origin(),
+                        view: right_view * moment.stage,
                         proj: right_projection,
                         clip_offset: 0.5,
                         clip: Rect {
@@ -185,7 +185,7 @@ impl VrContext {
             let gp = gp.borrow();
             let data = gp.data();
             let state = gp.state();
-            if let (Some(pose), true) = (pose_transform(&state.pose), state.connected) {
+            if let (Some(pose), true) = (pose_transform(&state.pose, &moment.inverse_stage), state.connected) {
                 moment.cont.insert(state.gamepad_id, ControllerMoment {
                     id: state.gamepad_id,
                     name: data.name.clone(),
@@ -209,7 +209,9 @@ pub struct VrMoment {
     tertiary: Option<u32>,
     layer: VRLayer,
     /// The stage transform (moves the origin to the center of the room)
-    pub stage: Transform3<f32>,
+    pub stage: Similarity3<f32>,
+    /// The inverse stage transform (moves the center of the room to the origin)
+    pub inverse_stage: Similarity3<f32>,
     /// Has the VR system requested the application to exit
     pub exit: bool,
     /// Has the VR system requested the application to pause movement (should still sync and submit frames)
@@ -249,9 +251,9 @@ impl VrMoment {
 /// Iterator over momentary controller information.
 pub type ControllerIter<'a> = ::std::collections::hash_map::Values<'a, u32, ControllerMoment>;
 
-/// Used to persistently identity a controller, either by internal 
-/// id or by role. Note that roles can refer to different physical devices 
-/// at different times, while the internal id will remain locked 
+/// Used to persistently identity a controller, either by internal
+/// id or by role. Note that roles can refer to different physical devices
+/// at different times, while the internal id will remain locked
 /// to a particular device.
 #[derive(Copy, Clone, Debug)]
 pub enum ControllerRef {
@@ -368,12 +370,12 @@ impl Trackable for ControllerMoment {
     }
 }
 
-fn pose_transform(ctr: &VRPose) -> Option<Isometry3<f32>> {
+fn pose_transform(ctr: &VRPose, inverse_stage: &Similarity3<f32>) -> Option<Isometry3<f32>> {
     let or = Unit::new_normalize(Quaternion::upgrade(
         match ctr.orientation { Some(o) => o, None => return None }));
     let pos = Translation3::upgrade(
         match ctr.position { Some(o) => o, None => return None });
-    Some(Isometry3::from_parts(pos, or))
+    Some((inverse_stage * Isometry3::from_parts(pos, or)).isometry)
 }
 
 /// A structure for tracking the state of a mapped controller.
@@ -470,7 +472,7 @@ impl MappedController {
                 }
                 self.pad = pad;
                 self.pad_touched = true;
-            } else { 
+            } else {
                 self.pad_touched = false;
                 self.pad_delta = na::zero();
             }
