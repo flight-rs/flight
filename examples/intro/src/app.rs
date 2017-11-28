@@ -150,7 +150,7 @@ impl<R: gfx::Resources> App<R> {
             (Ok(_), Ok(_)) => (),
             _ => warn!("A not vive-like controller is connected"),
         }
-        
+
 
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
@@ -171,15 +171,15 @@ impl<R: gfx::Resources> App<R> {
             s.ambient(BACKGROUND);
             s.lights(&[
                 Light {
-                    pos: vrm.stage * Point3::new(4., 0., 0.),
+                    pos: Point3::new(4., 0., 0.),
                     color: [0.8, 0.2, 0.2, 100.],
                 },
                 Light {
-                    pos: vrm.stage * Point3::new(0., 4., 0.),
+                    pos: Point3::new(0., 4., 0.),
                     color: [0.2, 0.8, 0.2, 100.],
                 },
                 Light {
-                    pos: vrm.stage * Point3::new(0., 0., 4.),
+                    pos: Point3::new(0., 0., 4.),
                     color: [0.2, 0.2, 0.8, 100.],
                 },
                 cont_light,
@@ -187,7 +187,7 @@ impl<R: gfx::Resources> App<R> {
         });
 
         // Draw grid
-        self.solid.draw(ctx, vrm.stage, &self.grid);
+        self.solid.draw(ctx, na::one(), &self.grid);
 
         // Draw teapot
         let tearot =
@@ -199,16 +199,16 @@ impl<R: gfx::Resources> App<R> {
             na::convert(self.primary.pose * Similarity3::from_parts(
                 Translation3::new(0., 0., -0.25),
                 tearot,
-                0.15 * self.primary.pad_theta().abs() as f32 / PI,		
+                (0.15 * self.primary.pad_theta().abs() as f32 / PI).max(0.001),
             ))
         } else {
-            vrm.stage * Similarity3::from_parts(
+            Similarity3::from_parts(
                 Translation3::new(1., 0., 1.),
                 tearot,
                 1.,
             )
         };
-        self.pbr.draw(ctx, teamat, &self.teapot);
+        self.pbr.draw(ctx, na::convert(teamat), &self.teapot);
 
         // Draw controllers
         for cont in vrm.controllers() {
