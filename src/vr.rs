@@ -411,6 +411,8 @@ pub struct MappedController {
     pub menu: bool,
     /// Are the grip buttons pressed
     pub grip: bool,
+    /// Maximum time step for velocity calculations
+    pub max_step: f64,
 }
 
 impl Default for MappedController {
@@ -431,6 +433,7 @@ impl Default for MappedController {
             pad_touched: false,
             menu: false,
             grip: false,
+            max_step: ::std::f64::INFINITY,
         }
     }
 }
@@ -456,8 +459,9 @@ impl MappedController {
             if self.dt > ::std::f64::EPSILON {
                 let lin_delta = cont.pose.translation.vector - self.pose.translation.vector;
                 let ang_delta = (cont.pose.rotation * self.pose.rotation.inverse()).scaled_axis();
-                self.lin_vel = 0.9 * self.lin_vel + 0.1 * lin_delta / self.dt as f32;
-                self.ang_vel = 0.9 * self.ang_vel + 0.1 * ang_delta / self.dt as f32;
+                let dt = self.dt.min(self.max_step) as f32;
+                self.lin_vel = 0.9 * self.lin_vel + 0.1 * lin_delta / dt;
+                self.ang_vel = 0.9 * self.ang_vel + 0.1 * ang_delta / dt;
             }
             self.pose_delta = cont.pose * self.pose.inverse();
             self.pose = cont.pose;
