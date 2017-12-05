@@ -5,6 +5,8 @@ use fnv::FnvHashMap;
 use gfx::{Rect};
 use ::NativeRepr;
 
+const VEL_SMOOTHING: f64 = 1e-90;
+
 /// Provides access to VR hardware.
 pub struct VrContext {
     vrsm: VRServiceManager,
@@ -457,11 +459,18 @@ impl MappedController {
             self.last_timestamp = Some(mom.timestamp);
 
             if self.dt > ::std::f64::EPSILON {
+                // Translation change
                 let lin_delta = cont.pose.translation.vector - self.pose.translation.vector;
+                // Rotation change
                 let ang_delta = (cont.pose.rotation * self.pose.rotation.inverse()).scaled_axis();
-                let dt = self.dt.min(self.max_step) as f32;
-                self.lin_vel = 0.9 * self.lin_vel + 0.1 * lin_delta / dt;
-                self.ang_vel = 0.9 * self.ang_vel + 0.1 * ang_delta / dt;
+                // Time change (clamped below max_step)
+                let dt = self.dt.min(self.max_step);
+                // Smoothing param
+                let frac = VEL_SMOOTHING.powf(dt) as f32;
+                let invfrac = 1. - frac;
+                // Calculate velocity
+                self.lin_vel = frac * self.lin_vel + invfrac * lin_delta / dt as f32;
+                self.ang_vel = frac * self.ang_vel + invfrac * ang_delta / dt as f32;
             }
             self.pose_delta = cont.pose * self.pose.inverse();
             self.pose = cont.pose;
