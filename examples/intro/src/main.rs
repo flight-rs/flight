@@ -15,7 +15,7 @@ use clap::{Arg, App};
 use gfx::{handle, Factory, texture, Device};
 use gfx::format::*;
 use gfx_device_gl::{NewTexture};
-use gfx::memory::Typed;
+use gfx::memory::{Typed, Bind};
 use glutin::GlContext;
 
 mod app;
@@ -69,7 +69,7 @@ fn main() {
             kind: texture::Kind::D2(render_width as u16, render_height as u16, texture::AaMode::Single),
             levels: 1,
             format: R8_G8_B8_A8::get_surface_type(),
-            bind: gfx::RENDER_TARGET | gfx::SHADER_RESOURCE,
+            bind: Bind::RENDER_TARGET | Bind::SHADER_RESOURCE,
             usage: gfx::memory::Usage::Data,
         };
 

@@ -2,12 +2,12 @@ use std::path::Path;
 use std::time::Instant;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
-use nalgebra::{self as na, UnitQuaternion, Similarity3, Translation3, Point3, Point2, Vector3};
+use nalgebra::{self as na, UnitQuaternion, Similarity3, Translation3, Point2, Vector3};
 
-use lib::{Texture, Light, PbrMesh, Error};
+use lib::{Texture, UberMesh, Error};
 use lib::mesh::*;
 use lib::load;
-use lib::draw::{DrawParams, Painter, SolidStyle, PbrStyle, PbrMaterial};
+use lib::draw::{DrawParams, Painter, SolidStyle, UberStyle, UberMaterial};
 use lib::vr::{primary, secondary, VrMoment, MappedController, Trackable};
 
 pub const NEAR_PLANE: f64 = 0.1;
@@ -19,12 +19,12 @@ const DEG: f32 = PI2 / 360.;
 
 pub struct App<R: gfx::Resources> {
     solid: Painter<R, SolidStyle<R>>,
-    pbr: Painter<R, PbrStyle<R>>,
+    uber: Painter<R, UberStyle<R>>,
     grid: Mesh<R, VertC, ()>,
     controller_grid: Mesh<R, VertC, ()>,
     arrow: Mesh<R, VertC, ()>,
-    controller: PbrMesh<R>,
-    teapot: PbrMesh<R>,
+    controller: UberMesh<R>,
+    teapot: UberMesh<R>,
     start_time: Instant,
     primary: MappedController,
     secondary: MappedController,
@@ -93,16 +93,28 @@ fn arrow() -> MeshSource<VertC, ()> {
     }
 }
 
-fn load_my_simple_object<P, R, F>(f: &mut F, path: P, albedo: [u8; 4])
-    -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
+fn load_my_simple_object<P, R, F>(
+    f: &mut F,
+    path: P,
+    albedo: [f32; 3],
+    metalness: f32,
+    roughness: f32,
+    flatness: f32
+)
+    -> Result<Mesh<R, VertNTT, UberMaterial<R>>, Error>
     where P: AsRef<Path>, R: gfx::Resources, F: gfx::Factory<R>
 {
+    fn f2unorm(v: f32) -> u8 {
+        (v * 256.).round().min(255.).max(0.) as u8
+    }
+
+    let albedo = [f2unorm(albedo[0]), f2unorm(albedo[1]), f2unorm(albedo[2]), 255];
+    let knobs = [f2unorm(metalness), f2unorm(roughness), f2unorm(flatness), 0];
     use gfx::format::*;
-    Ok(load::wavefront_file(path)?.compute_tan().with_material(PbrMaterial {
-        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, albedo)?,
-        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, [0x60, 0x60, 0x60, 0xFF])?,
-        metalness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x00)?,
-        roughness: Texture::<_, (R8, Unorm)>::uniform_value(f, 0x20)?,
+    Ok(load::open_wavefront(path)?.compute_tan().with_material(UberMaterial {
+        albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, albedo)?,
+        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x60, 0x60, 0x60, 0xFF])?,
+        knobs: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, knobs)?,
     }).upload(f))
 }
 
@@ -113,18 +125,29 @@ impl<R: gfx::Resources> App<R> {
         solid.setup(factory, Primitive::LineList)?;
         solid.setup(factory, Primitive::TriangleList)?;
 
-        let mut pbr: Painter<_, PbrStyle<_>> = Painter::new(factory)?;
-        pbr.setup(factory, Primitive::TriangleList)?;
+        let mut uber: Painter<_, UberStyle<_>> = Painter::new(factory)?;
+        uber.setup(factory, Primitive::TriangleList)?;
 
         // Construct App
         Ok(App {
             solid: solid,
-            pbr: pbr,
+            uber: uber,
             grid: grid_lines(8, 8.).upload(factory),
             controller_grid: grid_lines(2, 0.2).upload(factory),
             arrow: arrow().upload(factory),
-            controller: load_my_simple_object(factory, "assets/controller.obj", [0x80, 0x80, 0xFF, 0xFF])?,
-            teapot: load::object_directory(factory, "assets/teapot_wood/")?,
+            controller: load_my_simple_object(
+                factory,
+                "assets/controller.obj",
+                [0.7, 0.7, 0.9],
+                0.,
+                0.2,
+                0.)?,
+            teapot: load::open_uber_mesh(
+                factory, 
+                "assets/teapot_wood/model.obj",
+                "assets/teapot_wood/albedo.png",
+                "assets/teapot_wood/normal.png",
+                "assets/teapot_wood/knobs.png")?,
             start_time: Instant::now(),
             primary: MappedController {
                 is: primary(),
@@ -151,40 +174,9 @@ impl<R: gfx::Resources> App<R> {
             _ => warn!("A not vive-like controller is connected"),
         }
 
-
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
         ctx.encoder.clear(&ctx.color, [BACKGROUND[0].powf(1. / 2.2), BACKGROUND[1].powf(1. / 2.2), BACKGROUND[2].powf(1. / 2.2), BACKGROUND[3]]);
-
-        // Controller light
-        let cont_light = if self.secondary.connected {
-            Light {
-                pos: self.secondary.pose * Point3::new(0., 0., -0.1),
-                color: [0.6, 0.6, 0.6, 10. * self.secondary.trigger as f32],
-            }
-        } else {
-            Default::default()
-        };
-
-        // Config PBR lights
-        self.pbr.cfg(|s| {
-            s.ambient(BACKGROUND);
-            s.lights(&[
-                Light {
-                    pos: Point3::new(4., 0., 0.),
-                    color: [0.8, 0.2, 0.2, 100.],
-                },
-                Light {
-                    pos: Point3::new(0., 4., 0.),
-                    color: [0.2, 0.8, 0.2, 100.],
-                },
-                Light {
-                    pos: Point3::new(0., 0., 4.),
-                    color: [0.2, 0.2, 0.8, 100.],
-                },
-                cont_light,
-            ]);
-        });
 
         // Draw grid
         self.solid.draw(ctx, na::one(), &self.grid);
@@ -208,12 +200,12 @@ impl<R: gfx::Resources> App<R> {
                 1.,
             )
         };
-        self.pbr.draw(ctx, na::convert(teamat), &self.teapot);
+        self.uber.draw(ctx, na::convert(teamat), &self.teapot);
 
         // Draw controllers
         for cont in vrm.controllers() {
             self.solid.draw(ctx, na::convert(cont.pose), &self.controller_grid);
-            self.pbr.draw(ctx, na::convert(cont.pose), &self.controller);
+            self.uber.draw(ctx, na::convert(cont.pose), &self.controller);
         }
 
         for cont in &[&self.primary, &self.secondary] {

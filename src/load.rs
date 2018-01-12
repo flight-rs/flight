@@ -1,21 +1,19 @@
 use wavefront::*;
-use image::{DynamicImage, Pixel, ImageBuffer};
-use image::open as open_image;
+use image::{self, GenericImage, RgbaImage, open as open_image, load as load_image};
 use gfx;
-use gfx::format;
-use gfx::texture::{Kind, AaMode};
-use gfx::handle;
+use gfx::format::*;
+use gfx::handle::Sampler;
 
 use fnv::FnvHashMap;
-use std::ops::Deref;
+use std::io::Cursor;
 use std::path::Path;
 
 use ::{Error, Texture};
 use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
-use ::draw::PbrMaterial;
+use ::draw;
 
 /// Load wavefront OBJ data into an internal mesh object 
-pub fn wavefront_data(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>, Error> {
+pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>, Error> {
     let mut verts = Vec::new();
     let mut ind_look = FnvHashMap::default();
     let mut inds = Vec::new();
@@ -39,115 +37,102 @@ pub fn wavefront_data(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>
 }
 
 /// Load a wavefront obj file into an internal mesh object
-pub fn wavefront_file<P: AsRef<Path>>(path: P) -> Result<MeshSource<VertNT, ()>, Error> {
-    wavefront_data(&Obj::load(path.as_ref())?)
+pub fn open_wavefront<P: AsRef<Path>>(path: P) -> Result<MeshSource<VertNT, ()>, Error> {
+    load_wavefront(&Obj::load(path.as_ref())?)
 }
 
-/// Load some image data into a GPU-allocated internal texture object
-pub fn image_data<R, F, T>(f: &mut F, img: DynamicImage, samp: handle::Sampler<R>, aa: AaMode)
-    -> Result<Texture<R, T>, Error>
+pub fn load_integrated_brdf<R, F>(f: &mut F)
+    -> Result<Texture<R, (R8_G8, Unorm)>, Error>
     where
         R: gfx::Resources,
         F: gfx::Factory<R>,
-        T: format::TextureFormat,
-        <<T as format::Formatted>::Surface as format::SurfaceTyped>::DataType: ImageData,
 {
-    let data = <T::Surface as format::SurfaceTyped>::DataType::load(&img, aa);
-    let (_, t): (
-        gfx::handle::Texture<R, <T as format::Formatted>::Surface>,
-        _
-    ) = f.create_texture_immutable_u8::<T>(
-        data.0,
-        &[data.1.as_ref()],
+    let img = load_image(
+        Cursor::new(&include_bytes!("draw/shaders/brdf_lut.png")[..]),
+        image::ImageFormat::PNG)?;
+    let (width, height) = img.dimensions();
+    let data: Vec<_> = img.to_rgb()
+        .pixels()
+        .map(|p| [p.data[0], p.data[1]])
+        .collect();
+    
+    use gfx::texture::*;
+    let (_, shader_resource) = f.create_texture_immutable
+        ::<(R8_G8, Unorm)>(
+        Kind::D2(width as u16, height as u16, AaMode::Single),
+        Mipmap::Provided,
+        &[&data[..]],
     )?;
+    let sampler = f.create_sampler(SamplerInfo::new(
+        FilterMethod::Bilinear,
+        WrapMode::Border));
     Ok(Texture {
-        buffer: t,
-        sampler: samp,
+        sampler: sampler,
+        buffer: shader_resource,
     })
 }
 
-/// A binary pixel format that can be used by the GPU
-pub trait ImageData {
-    // TODO: make more efficient (currently requires too much iterating and allocating)
-    /// Convert the DynamicImage object to a simple array of bytes following this format
-    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>);
-}
-
-fn array_data<P, S>(buf: ImageBuffer<P, S>, aa: AaMode) -> (Kind, Vec<u8>)
-    where
-        P: Pixel<Subpixel=u8> + 'static,
-        S: Deref<Target = [u8]>,
-{
-    (
-        Kind::D2(buf.width() as u16, buf.height() as u16, aa),
-        buf.into_raw().deref().to_vec(),
-    )
-}
-
-impl ImageData for [u8; 4] {
-    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
-        array_data(img.to_rgba(), aa)
-    }
-}
-
-impl ImageData for [u8; 3] {
-    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
-        array_data(img.to_rgb(), aa)
-    }
-}
-
-impl ImageData for u8 {
-    fn load(img: &DynamicImage, aa: AaMode) -> (Kind, Vec<u8>) {
-        array_data(img.to_luma(), aa)
-    }
-}
-
-/// Load a physically based object out of a directory. Will load
-///`normal.png`, `albedo.png`, `metalness.png`, `roughness.png`, and `model.obj`.
-pub fn object_directory<R, F, P>(f: &mut F, path: P)
-    -> Result<Mesh<R, VertNTT, PbrMaterial<R>>, Error>
+pub fn load_rgba8<R, F, T>(f: &mut F, image: RgbaImage, sampler: Sampler<R>)
+    -> Result<Texture<R, (R8_G8_B8_A8, T)>, Error>
     where
         R: gfx::Resources,
         F: gfx::Factory<R>,
+        (R8_G8_B8_A8, T): Formatted,
+        <(R8_G8_B8_A8, T) as Formatted>::Channel: TextureChannel,
+        <(R8_G8_B8_A8, T) as Formatted>::Surface: TextureSurface,
+{    
+    use gfx::texture::*;
+    let (width, height) = image.dimensions();
+    let (_, shader_resource) = f.create_texture_immutable_u8
+        ::<(R8_G8_B8_A8, T)>(
+        Kind::D2(width as u16, height as u16, AaMode::Single),
+        Mipmap::Provided,
+        &[&image.into_raw()[..]],
+    )?;
+    Ok(Texture {
+        sampler: sampler,
+        buffer: shader_resource,
+    })
+}
+
+pub fn open_rgba8<R, F, T, P>(f: &mut F, path: P, sampler: Sampler<R>)
+    -> Result<Texture<R, (R8_G8_B8_A8, T)>, Error>
+    where
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+        (R8_G8_B8_A8, T): Formatted,
+        <(R8_G8_B8_A8, T) as Formatted>::Channel: TextureChannel,
+        <(R8_G8_B8_A8, T) as Formatted>::Surface: TextureSurface,
         P: AsRef<Path>,
 {
+    load_rgba8(f, open_image(path)?.to_rgba(), sampler)
+}
+
+pub fn open_uber_mesh<R, F, P1, P2, P3, P4>(
+    f: &mut F,
+    wavefront: P1,
+    albedo: P2,
+    normal: P3,
+    knobs: P4,
+)
+    -> Result<Mesh<R, VertNTT, draw::UberMaterial<R>>, Error>
+    where
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+        P1: AsRef<Path>,
+        P2: AsRef<Path>,
+        P3: AsRef<Path>,
+        P4: AsRef<Path>,
+{
     use gfx::texture::*;
-    let aa = AaMode::Single;
-    let path = path.as_ref();
-    info!("Loading object in {:?}", path);
-
-    let sampler = f.create_sampler(SamplerInfo::new(FilterMethod::Bilinear, WrapMode::Tile));
-
-    let normal = image_data(
-        f,
-        open_image(path.join("normal.png"))?,
-        sampler.clone(),
-        aa
-    )?;
-    let albedo = image_data(
-        f,
-        open_image(path.join("albedo.png"))?,
-        sampler.clone(),
-        aa
-    )?;
-    let metalness = image_data(
-        f,
-        open_image(path.join("metalness.png"))?,
-        sampler.clone(),
-        aa
-    )?;
-    let roughness = image_data(
-        f,
-        open_image(path.join("roughness.png"))?,
-        sampler.clone(),
-        aa
-    )?;
-    Ok(wavefront_file(path.join("model.obj"))?
+    let sampler = f.create_sampler(SamplerInfo::new(
+        FilterMethod::Bilinear,
+        WrapMode::Tile));
+    Ok(open_wavefront(wavefront)?
     .compute_tan()
-    .with_material(PbrMaterial {
-        normal: normal,
-        albedo: albedo,
-        metalness: metalness,
-        roughness: roughness,
+    .with_material(draw::UberMaterial {
+        albedo: open_rgba8(f, albedo, sampler.clone())?,
+        normal: open_rgba8(f, normal, sampler.clone())?,
+        knobs: open_rgba8(f, knobs, sampler)?,
     }).upload(f))
 }

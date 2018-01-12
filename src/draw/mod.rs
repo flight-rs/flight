@@ -23,6 +23,9 @@ pub use self::unishade::{UnishadeStyle, UnishadeInputs};
 mod pbr;
 pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs, LIGHT_COUNT};
 
+mod uber;
+pub use self::uber::{UberStyle, UberMaterial, UberInputs};
+
 /// The painter is responsible for drawing meshes. Painters 
 /// are instantiated with an associated style which specifies
 /// the data required for drawing (vertex type, material params,

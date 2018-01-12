@@ -31,12 +31,14 @@ pub use self::util::*;
 use gfx::shade::core::CreateShaderError;
 use gfx::handle::*;
 use gfx::format::*;
-use nalgebra::{Point3};
+use nalgebra::{Point3, UnitQuaternion, Point2};
 
 /// The pixel format of color drawing targets
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
 /// The pixel format of depth drawing targets
 pub type DepthFormat = (D24_S8, Unorm);
+/// The pixel format of shadow depth buffers
+pub type ShadowDepthFormat = (D32, Float);
 /// Reference to a GPU color target
 pub type TargetRef<R> = RenderTargetView<R, ColorFormat>;
 /// Reference to a GPU depth target
@@ -45,6 +47,7 @@ pub type DepthRef<R> = DepthStencilView<R, DepthFormat>;
 pub type ShaderResult<R> = Result<gfx::ShaderSet<R>, CreateShaderError>;
 /// A mesh that can be physically (realistically) rendered
 pub type PbrMesh<R> = mesh::Mesh<R, mesh::VertNTT, draw::PbrMaterial<R>>;
+pub type UberMesh<R> = mesh::Mesh<R, mesh::VertNTT, draw::UberMaterial<R>>;
 
 /// Parameters for a point light source
 #[derive(Copy, Debug, Clone)]
@@ -58,6 +61,24 @@ impl Default for Light {
         Light {
             pos: Point3::origin(),
             color: [0.; 4],
+        }
+    }
+}
+
+/// Parameters for a sun light source
+#[derive(Copy, Debug, Clone)]
+pub struct Sun {
+    pub view: UnitQuaternion<f32>,
+    pub min_corner: Point2<f32>,
+    pub max_corner: Point2<f32>,
+}
+
+impl Default for Sun {
+    fn default() -> Sun {
+        Sun {
+            view: UnitQuaternion::identity(),
+            min_corner: Point2::origin(),
+            max_corner: Point2::origin(),
         }
     }
 }
@@ -89,6 +110,7 @@ impl<R: gfx::Resources, T: TextureFormat> Texture<R, T> {
             _
         ) = f.create_texture_immutable::<T>(
             Kind::D2(1, 1, AaMode::Single),
+            Mipmap::Provided,
             &[&[val]],
         )?;
         let s = f.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Tile));

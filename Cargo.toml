@@ -9,7 +9,7 @@ authors = [
 
 [dependencies]
 nalgebra = "^0.13.0"
-gfx = "^0.16.1"
+gfx = "^0.17.1"
 log = "^0.3.8"
 obj = "^0.8.0"
 fnv = "^1.0.5"
