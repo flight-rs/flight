@@ -181,7 +181,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
     fn init<F: Factory<R>>(
         f: &mut F,
     ) -> Result<UberInputs<R>, Error> {
-        let bg_color = [0.2, 0.2, 0.2];
+        let bg_color = [0.529, 0.808, 0.980];
         let bg_bytes = unsafe {
             transmute::<[f32; 3], [u32; 3]>(bg_color)
         };
@@ -193,12 +193,12 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             params_update: true,
             params_block: f.create_constant_buffer(1),
             gamma: 2.2,
-            exposure: 1.,
+            exposure: 0.8,
             integrated_brdf: ::load::load_integrated_brdf(f)?,
             env: UberEnv {
                 filtered_env: Texture::uniform_value(f, bg_bytes)?,
                 irradiance: Texture::uniform_value(f, bg_bytes)?,
-                sun_color: [1., 1., 1., 1.2],
+                sun_color: [1., 1., 1., 2.0],
                 sun_rotation: Rotation3::rotation_between(
                     &Vector3::new(0., 0., -1.),
                     &Vector3::new(0., -1., 0.),

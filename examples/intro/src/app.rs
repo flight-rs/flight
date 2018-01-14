@@ -113,7 +113,7 @@ fn load_my_simple_object<P, R, F>(
     use gfx::format::*;
     Ok(load::open_wavefront(path)?.compute_tan().with_material(UberMaterial {
         albedo: Texture::<_, (R8_G8_B8_A8, Srgb)>::uniform_value(f, albedo)?,
-        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x60, 0x60, 0x60, 0xFF])?,
+        normal: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, [0x80, 0x80, 0xFF, 0xFF])?,
         knobs: Texture::<_, (R8_G8_B8_A8, Unorm)>::uniform_value(f, knobs)?,
     }).upload(f))
 }
@@ -138,9 +138,9 @@ impl<R: gfx::Resources> App<R> {
             controller: load_my_simple_object(
                 factory,
                 "assets/controller.obj",
-                [0.7, 0.7, 0.9],
+                [0.7, 0.7, 0.7],
                 0.,
-                0.2,
+                0.4,
                 0.)?,
             teapot: load::open_uber_mesh(
                 factory, 

@@ -70,14 +70,13 @@ vec3 light_contrib(
     float VdotH,
     vec3 radiance,
     vec3 albedo,
-    float roughness,
+    float alpha,
     float metalness) {
     
     // fresnel reflectance
     vec3 F0 = mix(vec3(F0_REFLECTIVITY), albedo, metalness);
 
     // brdf
-    float alpha = roughness * roughness;
     float ndf = distribution_ggx(NdotH, alpha);
     float geo = geometry_smith(NdotV, NdotL, alpha);
     vec3 fres = fresnel_schlick(NdotV, F0);
@@ -96,17 +95,17 @@ void main() {
     // material params
     vec3 albedo = texture(albedo_tex, I_TEX).rgb;
     vec3 knobs = texture(knobs_tex, I_TEX).rgb;
-    float roughness = knobs.r;
-    float metalness = knobs.g;
+    float metalness = knobs.r;
+    float roughness = knobs.g;
+    float alpha = roughness * roughness;
     float solidness = knobs.b;
 
     // imortant vectors
     vec3 N = normalize(norm);
     vec3 V = normalize(eye_pos.xyz - I_POS);
-    float NdotV = abs(dot(N, V)) + 0.001;
-
-    // reflection
+    float NdotV = abs(dot(N, V));
     vec3 R = V - 2 * NdotV * N;
+    NdotV = clamp(NdotV, 0.01, 1.0);
 
     // outgoing radiance
     vec3 lum = vec3(0);
@@ -114,8 +113,8 @@ void main() {
     // IBL
     // indirect diffuse
     lum += texture(irradiance_map, N).rgb * albedo * (1 - metalness);
-    vec2 env_brdf = texture(integrated_brdf_map, vec2(roughness, NdotV)).rg;
-    lum += texture(filtered_env_map, R).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
+    vec2 env_brdf = texture(integrated_brdf_map, vec2(NdotV, roughness)).rg;
+    //lum += texture(filtered_env_map, R).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
 
     // sun shadow
     vec4 sun_frag_pos = sun_matrix * vec4(I_POS, 1);
@@ -123,27 +122,26 @@ void main() {
     float shadow_level = texture(shadow_depth, sun_frag_uv) - sun_in_env;
 
     // sun vectors
-    vec3 sun_L = (sun_matrix * vec4(0, 0, -1, 0)).xyz;
+    vec3 sun_L = -(sun_matrix * vec4(0, 0, -1, 0)).xyz;
     vec3 sun_H = normalize(V + sun_L); // halfway vector
-    float sun_NdotL = clamp(dot(N, sun_L), 0.001, 1.0);
+    float sun_NdotL = clamp(dot(N, sun_L), 0.01, 1.0);
     float sun_NdotH = clamp(dot(N, sun_H), 0.0, 1.0);
     float sun_VdotH = clamp(dot(V, sun_H), 0.0, 1.0);
 
-    lum += shadow_level * light_contrib(
+    lum += light_contrib(
         sun_NdotL,
         NdotV,
         sun_NdotH,
         sun_VdotH,
         sun_color.rgb * sun_color.a,
         albedo,
-        roughness,
+        alpha,
         metalness);
-
-    // make solid
-    lum = mix(lum, albedo, solidness);
 
     // hdr to ldr  
     vec3 mapped = vec3(1.0) - exp(-lum * exposure);
-    mapped = pow(mapped, vec3(gamma));
+    //mapped = mix(mapped, albedo, solidness); // make solid
+    mapped = pow(mapped, vec3(1 / gamma));
+
     f_color = vec4(mapped, 1.0);
 }
