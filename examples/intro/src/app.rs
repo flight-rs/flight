@@ -131,11 +131,11 @@ impl<R: gfx::Resources> App<R> {
         uber.setup(factory, Primitive::TriangleList)?;
 
         let radiance = load::load_hdr_cubemap(factory, 6, |side, level| {
-            let path = format!("assets/uffizi/radiance_{}_{}.hdr", level, side);
+            let path = format!("assets/arches/radiance_{}_{}.hdr", level, side);
             Ok(BufReader::new(File::open(path)?))
         })?;
         let irradiance = load::load_hdr_cubemap(factory, 1, |side, _| {
-            let path = format!("assets/uffizi/irradiance_{}.hdr", side);
+            let path = format!("assets/arches/irradiance_{}.hdr", side);
             Ok(BufReader::new(File::open(path)?))
         })?;
         uber.cfg(|inputs| {
@@ -162,10 +162,10 @@ impl<R: gfx::Resources> App<R> {
                 0.)?,
             teapot: load::open_uber_mesh(
                 factory, 
-                "assets/teapot_wood/model.obj",
-                "assets/teapot_wood/albedo.png",
-                "assets/teapot_wood/normal.png",
-                "assets/teapot_wood/knobs.png")?,
+                "assets/cerberus/model.obj",
+                "assets/cerberus/albedo.png",
+                "assets/cerberus/normal.png",
+                "assets/cerberus/knobs.png")?,
             start_time: Instant::now(),
             primary: MappedController {
                 is: primary(),
