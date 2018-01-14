@@ -193,7 +193,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             params_update: true,
             params_block: f.create_constant_buffer(1),
             gamma: 2.2,
-            exposure: 0.8,
+            exposure: 1.0,
             integrated_brdf: ::load::load_integrated_brdf(f)?,
             env: UberEnv {
                 radiance: Texture::uniform_value(f, bg_bytes)?,

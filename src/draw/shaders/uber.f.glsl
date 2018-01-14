@@ -96,6 +96,7 @@ void main() {
     vec3 albedo = texture(albedo_tex, I_TEX).rgb;
     vec3 knobs = texture(knobs_tex, I_TEX).rgb;
     float metalness = knobs.r;
+    metalness = sqrt(metalness);
     float roughness = knobs.g;
     float alpha = roughness * roughness;
     float solidness = knobs.b;
@@ -114,7 +115,8 @@ void main() {
     // indirect diffuse
     lum += texture(irradiance_map, N).rgb * albedo * (1 - metalness);
     vec2 env_brdf = texture(integrated_brdf_map, vec2(NdotV, roughness)).rg;
-    lum += texture(radiance_map, R).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
+    float lod = mix(0, 5, roughness);
+    lum += textureLod(radiance_map, R, lod).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
 
     // sun shadow
     vec4 sun_frag_pos = sun_matrix * vec4(I_POS, 1);

@@ -130,8 +130,8 @@ impl<R: gfx::Resources> App<R> {
         let mut uber: Painter<_, UberStyle<_>> = Painter::new(factory)?;
         uber.setup(factory, Primitive::TriangleList)?;
 
-        let radiance = load::load_hdr_cubemap(factory, 1, |side, _| {
-            let path = format!("assets/uffizi/radiance_{}.hdr", side);
+        let radiance = load::load_hdr_cubemap(factory, 6, |side, level| {
+            let path = format!("assets/uffizi/radiance_{}_{}.hdr", level, side);
             Ok(BufReader::new(File::open(path)?))
         })?;
         let irradiance = load::load_hdr_cubemap(factory, 1, |side, _| {
@@ -142,7 +142,8 @@ impl<R: gfx::Resources> App<R> {
             let env = inputs.mut_env();
             env.radiance = radiance;
             env.irradiance = irradiance;
-            env.sun_included = true;
+            env.sun_included = false;
+            env.sun_color = [1., 1., 1., 3.];
         });
 
         // Construct App
@@ -155,9 +156,9 @@ impl<R: gfx::Resources> App<R> {
             controller: load_my_simple_object(
                 factory,
                 "assets/controller.obj",
-                [0.7, 0.7, 0.7],
-                0.,
-                0.4,
+                [0.8, 0.8, 0.6],
+                1.,
+                0.1,
                 0.)?,
             teapot: load::open_uber_mesh(
                 factory, 
