@@ -1,4 +1,6 @@
 use std::path::Path;
+use std::fs::File;
+use std::io::BufReader;
 use std::time::Instant;
 use gfx::{self, Factory};
 use gfx::traits::FactoryExt;
@@ -127,6 +129,21 @@ impl<R: gfx::Resources> App<R> {
 
         let mut uber: Painter<_, UberStyle<_>> = Painter::new(factory)?;
         uber.setup(factory, Primitive::TriangleList)?;
+
+        let radiance = load::load_hdr_cubemap(factory, 1, |side, _| {
+            let path = format!("assets/uffizi/radiance_{}.hdr", side);
+            Ok(BufReader::new(File::open(path)?))
+        })?;
+        let irradiance = load::load_hdr_cubemap(factory, 1, |side, _| {
+            let path = format!("assets/uffizi/irradiance_{}.hdr", side);
+            Ok(BufReader::new(File::open(path)?))
+        })?;
+        uber.cfg(|inputs| {
+            let env = inputs.mut_env();
+            env.radiance = radiance;
+            env.irradiance = irradiance;
+            env.sun_included = true;
+        });
 
         // Construct App
         Ok(App {

@@ -74,7 +74,8 @@ error!(
         ShaderProgram(ProgramError),
         Image(ImageError),
         Io(IoError),
-        InvalidPrimitive(-> invalid_primitive(p: Primitive))
+        InvalidPrimitive(-> invalid_primitive(p: Primitive)),
+        CubemapSizeMismatch(-> cube_size(expected: u32))
     }
 );
 

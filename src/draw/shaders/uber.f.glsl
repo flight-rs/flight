@@ -8,7 +8,7 @@ uniform sampler2D albedo_tex;
 uniform sampler2D knobs_tex;
 
 uniform samplerCube irradiance_map;
-uniform samplerCube filtered_env_map;
+uniform samplerCube radiance_map;
 uniform sampler2D integrated_brdf_map;
 
 uniform sampler2DShadow shadow_depth;
@@ -114,12 +114,12 @@ void main() {
     // indirect diffuse
     lum += texture(irradiance_map, N).rgb * albedo * (1 - metalness);
     vec2 env_brdf = texture(integrated_brdf_map, vec2(NdotV, roughness)).rg;
-    //lum += texture(filtered_env_map, R).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
+    lum += texture(radiance_map, R).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
 
     // sun shadow
     vec4 sun_frag_pos = sun_matrix * vec4(I_POS, 1);
     vec3 sun_frag_uv = sun_frag_pos.xyz / sun_frag_pos.w * 0.5 + 0.5; // position in shadow buffer
-    float shadow_level = texture(shadow_depth, sun_frag_uv) - sun_in_env;
+    float shadow_level = 1 /*texture(shadow_depth, sun_frag_uv)*/ - sun_in_env;
 
     // sun vectors
     vec3 sun_L = -(sun_matrix * vec4(0, 0, -1, 0)).xyz;
@@ -128,7 +128,7 @@ void main() {
     float sun_NdotH = clamp(dot(N, sun_H), 0.0, 1.0);
     float sun_VdotH = clamp(dot(V, sun_H), 0.0, 1.0);
 
-    lum += light_contrib(
+    lum += shadow_level * light_contrib(
         sun_NdotL,
         NdotV,
         sun_NdotH,

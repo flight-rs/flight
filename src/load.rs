@@ -1,12 +1,14 @@
 use wavefront::*;
-use image::{self, GenericImage, RgbaImage, open as open_image, load as load_image};
+use image::{self, hdr, GenericImage, RgbaImage, open as open_image, load as load_image};
 use gfx;
 use gfx::format::*;
 use gfx::handle::Sampler;
 
 use fnv::FnvHashMap;
-use std::io::Cursor;
+use std::io;
 use std::path::Path;
+use std::fmt;
+use std::mem;
 
 use ::{Error, Texture};
 use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
@@ -48,7 +50,7 @@ pub fn load_integrated_brdf<R, F>(f: &mut F)
         F: gfx::Factory<R>,
 {
     let img = load_image(
-        Cursor::new(&include_bytes!("draw/shaders/brdf_lut.png")[..]),
+        io::Cursor::new(&include_bytes!("draw/shaders/brdf_lut.png")[..]),
         image::ImageFormat::PNG)?;
     let (width, height) = img.dimensions();
     let data: Vec<_> = img.to_rgb()
@@ -135,4 +137,103 @@ pub fn open_uber_mesh<R, F, P1, P2, P3, P4>(
         normal: open_rgba8(f, normal, sampler.clone())?,
         knobs: open_rgba8(f, knobs, sampler)?,
     }).upload(f))
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum CubeSide {
+    PosX,
+    NegX,
+    PosY,
+    NegY,
+    PosZ,
+    NegZ,
+}
+
+impl fmt::Display for CubeSide {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use self::CubeSide::*;
+        let name = match *self {
+            PosX => "posx",
+            NegX => "negx",
+            PosY => "posy",
+            NegY => "negy",
+            PosZ => "posz",
+            NegZ => "negz",
+        };
+        write!(f, "{}", name)
+    }
+}
+
+pub const CUBE_SIDE_ORDER: [CubeSide; 6] = [
+    CubeSide::PosX,
+    CubeSide::NegX,
+    CubeSide::PosY,
+    CubeSide::NegY,
+    CubeSide::PosZ,
+    CubeSide::NegZ,
+];
+
+pub fn load_hdr_cubemap<R, F, B, S>(f: &mut F, levels: u8, source: S)
+    -> Result<Texture<R, (R32_G32_B32, Float)>, Error>
+    where
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+        B: io::BufRead,
+        S: Fn(CubeSide, u8) -> Result<B, Error>,
+{
+    let mut size = None;
+    // image vector
+    let mut imgs = Vec::with_capacity(
+        CUBE_SIDE_ORDER.len() * levels as usize);
+    for &c in &CUBE_SIDE_ORDER {
+        for l in 0..levels {
+            let img = hdr::HDRDecoder::new(source(c, l)?)?;
+            let meta = img.metadata();
+            let data = img.read_image_hdr()?;
+
+            // Calculate and verify image size
+            let mut size = *size.get_or_insert(meta.width);
+            size /= 1 << l;
+            if meta.width != size || meta.height != size {
+                return Err(Error::cube_size(size))
+            }
+
+            // Warning! Use of transmute.
+            // Make very very sure memory layout is the same.
+            assert_eq!(
+                mem::size_of::<image::Rgb<f32>>(),
+                mem::size_of::<[u32; 3]>(),
+            );
+            assert_eq!(
+                mem::align_of::<image::Rgb<f32>>(),
+                mem::align_of::<[u32; 3]>(),
+            );
+            let img = unsafe { mem::transmute::<
+                Vec<image::Rgb<f32>>,
+                Vec<[u32; 3]>,
+            >(data) };
+
+            imgs.push(img);
+        }
+    }
+    // size must be filled at this point
+    let size = size.unwrap();
+    // pointer vector
+    let refs: Vec<_> = imgs.iter().map(|i| &i[..]).collect();
+
+    use ::gfx::texture::*;
+    let sampler = f.create_sampler(SamplerInfo::new(
+        FilterMethod::Trilinear, // bilinear + linear between mipmaps
+        WrapMode::Border));
+    let (_, shader_resource) = f.create_texture_immutable
+        ::<(R32_G32_B32, Float)>(
+        Kind::Cube(size as u16),
+        Mipmap::Provided,
+        &refs[..],
+    )?;
+
+    Ok(Texture {
+        sampler: sampler,
+        buffer: shader_resource,
+    })
 }

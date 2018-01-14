@@ -49,7 +49,7 @@ gfx_defines!{
         albedo: gfx::TextureSampler<[f32; 4]> = "albedo_tex",
         knobs: gfx::TextureSampler<[f32; 4]> = "knobs_tex",
         irradiance: gfx::TextureSampler<[f32; 3]> = "irradiance_map",
-        filtered_env: gfx::TextureSampler<[f32; 3]> = "filtered_env_map",
+        radiance: gfx::TextureSampler<[f32; 3]> = "radiance_map",
         integrated_brdf: gfx::TextureSampler<[f32; 2]> = "integrated_brdf_map",
 
         shadow_depth: gfx::TextureSampler<f32> = "shadow_depth",
@@ -72,7 +72,7 @@ shader!(shader {
 /// The scene environment
 pub struct UberEnv<R: Resources> {
     pub irradiance: Texture<R, LumMapFormat>,
-    pub filtered_env: Texture<R, LumMapFormat>,
+    pub radiance: Texture<R, LumMapFormat>,
     pub sun_included: bool,
     pub sun_color: [f32; 4],
     pub sun_rotation: Rotation3<f32>,
@@ -196,7 +196,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             exposure: 0.8,
             integrated_brdf: ::load::load_integrated_brdf(f)?,
             env: UberEnv {
-                filtered_env: Texture::uniform_value(f, bg_bytes)?,
+                radiance: Texture::uniform_value(f, bg_bytes)?,
                 irradiance: Texture::uniform_value(f, bg_bytes)?,
                 sun_color: [1., 1., 1., 2.0],
                 sun_rotation: Rotation3::rotation_between(
@@ -248,7 +248,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             knobs: mat.knobs.clone().into_tuple(),
             integrated_brdf: inputs.integrated_brdf.clone().into_tuple(),
             irradiance: inputs.env.irradiance.clone().into_tuple(),
-            filtered_env: inputs.env.filtered_env.clone().into_tuple(),
+            radiance: inputs.env.radiance.clone().into_tuple(),
             shadow_depth: inputs.shadow_depth.clone().into_tuple(),
         });
         Ok(())
