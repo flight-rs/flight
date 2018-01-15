@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `UberEnv` struct in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, UberEnv">
+
+    <title>flight::draw::UberEnv - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct UberEnv</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.irradiance">irradiance</a><a href="#structfield.radiance">radiance</a><a href="#structfield.sun_included">sun_included</a><a href="#structfield.sun_color">sun_color</a><a href="#structfield.sun_rotation">sun_rotation</a><a href="#structfield.radiance_levels">radiance_levels</a></div></div><p class='location'><a href='../index.html'>flight</a>::<wbr><a href='index.html'>draw</a></p><script>window.sidebarCurrent = {name: 'UberEnv', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>flight</a>::<wbr><a href='index.html'>draw</a>::<wbr><a class="struct" href=''>UberEnv</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/draw/uber.rs.html#93-100' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct UberEnv&lt;R:&nbsp;<a class="trait" href="../../gfx_core/trait.Resources.html" title="trait gfx_core::Resources">Resources</a>&gt; {
+    pub irradiance: <a class="struct" href="../../flight/struct.Texture.html" title="struct flight::Texture">Texture</a>&lt;R, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="enum" href="../../gfx_core/format/enum.R32_G32_B32.html" title="enum gfx_core::format::R32_G32_B32">R32_G32_B32</a>, <a class="enum" href="../../gfx_core/format/enum.Float.html" title="enum gfx_core::format::Float">Float</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;,
+    pub radiance: <a class="struct" href="../../flight/struct.Texture.html" title="struct flight::Texture">Texture</a>&lt;R, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="enum" href="../../gfx_core/format/enum.R32_G32_B32.html" title="enum gfx_core::format::R32_G32_B32">R32_G32_B32</a>, <a class="enum" href="../../gfx_core/format/enum.Float.html" title="enum gfx_core::format::Float">Float</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;,
+    pub sun_included: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    pub sun_color: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 4]</a>,
+    pub sun_rotation: <a class="type" href="../../nalgebra/geometry/rotation_alias/type.Rotation3.html" title="type nalgebra::geometry::rotation_alias::Rotation3">Rotation3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;,
+    pub radiance_levels: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>,
+}</pre><div class='docblock'><p>The scene environment</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.irradiance" class="structfield small-section-header">
+                           <a href="#structfield.irradiance" class="anchor field"></a>
+                           <span id="irradiance.v" class='invisible'>
+                           <code>irradiance: <a class="struct" href="../../flight/struct.Texture.html" title="struct flight::Texture">Texture</a>&lt;R, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="enum" href="../../gfx_core/format/enum.R32_G32_B32.html" title="enum gfx_core::format::R32_G32_B32">R32_G32_B32</a>, <a class="enum" href="../../gfx_core/format/enum.Float.html" title="enum gfx_core::format::Float">Float</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;</code>
+                           </span></span><span id="structfield.radiance" class="structfield small-section-header">
+                           <a href="#structfield.radiance" class="anchor field"></a>
+                           <span id="radiance.v" class='invisible'>
+                           <code>radiance: <a class="struct" href="../../flight/struct.Texture.html" title="struct flight::Texture">Texture</a>&lt;R, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="enum" href="../../gfx_core/format/enum.R32_G32_B32.html" title="enum gfx_core::format::R32_G32_B32">R32_G32_B32</a>, <a class="enum" href="../../gfx_core/format/enum.Float.html" title="enum gfx_core::format::Float">Float</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a>&gt;</code>
+                           </span></span><span id="structfield.sun_included" class="structfield small-section-header">
+                           <a href="#structfield.sun_included" class="anchor field"></a>
+                           <span id="sun_included.v" class='invisible'>
+                           <code>sun_included: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span><span id="structfield.sun_color" class="structfield small-section-header">
+                           <a href="#structfield.sun_color" class="anchor field"></a>
+                           <span id="sun_color.v" class='invisible'>
+                           <code>sun_color: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 4]</a></code>
+                           </span></span><span id="structfield.sun_rotation" class="structfield small-section-header">
+                           <a href="#structfield.sun_rotation" class="anchor field"></a>
+                           <span id="sun_rotation.v" class='invisible'>
+                           <code>sun_rotation: <a class="type" href="../../nalgebra/geometry/rotation_alias/type.Rotation3.html" title="type nalgebra::geometry::rotation_alias::Rotation3">Rotation3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;</code>
+                           </span></span><span id="structfield.radiance_levels" class="structfield small-section-header">
+                           <a href="#structfield.radiance_levels" class="anchor field"></a>
+                           <span id="radiance_levels.v" class='invisible'>
+                           <code>radiance_levels: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a></code>
+                           </span></span></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

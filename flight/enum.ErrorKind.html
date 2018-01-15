@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ErrorKind` enum in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ErrorKind">
+
+    <title>flight::ErrorKind - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc enum">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Enum ErrorKind</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#variants">Variants</a><div class="sidebar-links"><a href="#variant.Gfx">Gfx</a><a href="#variant.GfxUpdate">GfxUpdate</a><a href="#variant.Pipeline">Pipeline</a><a href="#variant.Shader">Shader</a><a href="#variant.ShaderProgram">ShaderProgram</a><a href="#variant.Image">Image</a><a href="#variant.Io">Io</a><a href="#variant.InvalidPrimitive">InvalidPrimitive</a><a href="#variant.CubemapSizeMismatch">CubemapSizeMismatch</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Debug">Debug</a><a href="#impl-From%3CErrorKind%3E">From&lt;ErrorKind&gt;</a></div></div><p class='location'><a href='index.html'>flight</a></p><script>window.sidebarCurrent = {name: 'ErrorKind', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Enum <a href='index.html'>flight</a>::<wbr><a class="enum" href=''>ErrorKind</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/flight/error.rs.html#43-45' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>pub enum ErrorKind {
+    Gfx(<a class="enum" href="../gfx_core/factory/enum.CombinedError.html" title="enum gfx_core::factory::CombinedError">GfxCombinedError</a>),
+    GfxUpdate(<a class="enum" href="../gfx/encoder/enum.UpdateError.html" title="enum gfx::encoder::UpdateError">UpdateError</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;),
+    Pipeline(<a class="enum" href="../gfx/factory/enum.PipelineStateError.html" title="enum gfx::factory::PipelineStateError">PipelineStateError</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;),
+    Shader(<a class="enum" href="../gfx_core/shade/enum.CreateShaderError.html" title="enum gfx_core::shade::CreateShaderError">CreateShaderError</a>),
+    ShaderProgram(<a class="enum" href="../gfx/shade/enum.ProgramError.html" title="enum gfx::shade::ProgramError">ProgramError</a>),
+    Image(<a class="enum" href="../image/image/enum.ImageError.html" title="enum image::image::ImageError">ImageError</a>),
+    Io(<a class="struct" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html" title="struct std::io::error::Error">IoError</a>),
+    InvalidPrimitive(<a class="enum" href="../flight/mesh/enum.Primitive.html" title="enum flight::mesh::Primitive">Primitive</a>),
+    CubemapSizeMismatch(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>),
+}</pre><div class='docblock'><p>Error type enum</p>
+</div><h2 id='variants' class='variants small-section-header'>
+                   Variants<a href='#variants' class='anchor'></a></h2>
+<span id="variant.Gfx" class="variant small-section-header"><a href="#variant.Gfx" class="anchor field"></a><span id='Gfx.v' class='invisible'><code>Gfx(<a class="enum" href="../gfx_core/factory/enum.CombinedError.html" title="enum gfx_core::factory::CombinedError">GfxCombinedError</a>)</code></span></span><span id="variant.GfxUpdate" class="variant small-section-header"><a href="#variant.GfxUpdate" class="anchor field"></a><span id='GfxUpdate.v' class='invisible'><code>GfxUpdate(<a class="enum" href="../gfx/encoder/enum.UpdateError.html" title="enum gfx::encoder::UpdateError">UpdateError</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;)</code></span></span><span id="variant.Pipeline" class="variant small-section-header"><a href="#variant.Pipeline" class="anchor field"></a><span id='Pipeline.v' class='invisible'><code>Pipeline(<a class="enum" href="../gfx/factory/enum.PipelineStateError.html" title="enum gfx::factory::PipelineStateError">PipelineStateError</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>&gt;)</code></span></span><span id="variant.Shader" class="variant small-section-header"><a href="#variant.Shader" class="anchor field"></a><span id='Shader.v' class='invisible'><code>Shader(<a class="enum" href="../gfx_core/shade/enum.CreateShaderError.html" title="enum gfx_core::shade::CreateShaderError">CreateShaderError</a>)</code></span></span><span id="variant.ShaderProgram" class="variant small-section-header"><a href="#variant.ShaderProgram" class="anchor field"></a><span id='ShaderProgram.v' class='invisible'><code>ShaderProgram(<a class="enum" href="../gfx/shade/enum.ProgramError.html" title="enum gfx::shade::ProgramError">ProgramError</a>)</code></span></span><span id="variant.Image" class="variant small-section-header"><a href="#variant.Image" class="anchor field"></a><span id='Image.v' class='invisible'><code>Image(<a class="enum" href="../image/image/enum.ImageError.html" title="enum image::image::ImageError">ImageError</a>)</code></span></span><span id="variant.Io" class="variant small-section-header"><a href="#variant.Io" class="anchor field"></a><span id='Io.v' class='invisible'><code>Io(<a class="struct" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html" title="struct std::io::error::Error">IoError</a>)</code></span></span><span id="variant.InvalidPrimitive" class="variant small-section-header"><a href="#variant.InvalidPrimitive" class="anchor field"></a><span id='InvalidPrimitive.v' class='invisible'><code>InvalidPrimitive(<a class="enum" href="../flight/mesh/enum.Primitive.html" title="enum flight::mesh::Primitive">Primitive</a>)</code></span></span><span id="variant.CubemapSizeMismatch" class="variant small-section-header"><a href="#variant.CubemapSizeMismatch" class="anchor field"></a><span id='CubemapSizeMismatch.v' class='invisible'><code>CubemapSizeMismatch(<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>)</code></span></span>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+        <h3 id='impl-Debug' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="enum" href="../flight/enum.ErrorKind.html" title="enum flight::ErrorKind">ErrorKind</a></code><a href='#impl-Debug' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/flight/error.rs.html#42' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/flight/error.rs.html#42' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 id='impl-From%3CErrorKind%3E' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/convert/trait.From.html" title="trait core::convert::From">From</a>&lt;<a class="enum" href="../flight/enum.ErrorKind.html" title="enum flight::ErrorKind">ErrorKind</a>&gt; for <a class="struct" href="../flight/struct.Error.html" title="struct flight::Error">Error</a></code><a href='#impl-From%3CErrorKind%3E' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/flight/error.rs.html#54-61' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.from' class="method"><span id='from.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/convert/trait.From.html#tymethod.from' class='fnname'>from</a>(e: <a class="enum" href="../flight/enum.ErrorKind.html" title="enum flight::ErrorKind">ErrorKind</a>) -&gt; <a class="struct" href="../flight/struct.Error.html" title="struct flight::Error">Error</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/flight/error.rs.html#55-60' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Performs the conversion.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

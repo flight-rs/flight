@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `mesh` mod in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, mesh">
+
+    <title>flight::mesh - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module mesh</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'><a href='../index.html'>flight</a></p><script>window.sidebarCurrent = {name: 'mesh', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>flight</a>::<wbr><a class="mod" href=''>mesh</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/mesh.rs.html#1-501' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Mesh specification and upload</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Mesh.html"
+                                  title='struct flight::mesh::Mesh'>Mesh</a></td>
+                           <td class='docblock-short'>
+                                <p>A reference to a GPU mesh object that can be drawn by a <code>Painter</code> supporting the
+associated resource, vertex, material, and primitive combination. The memory cost
+of this object is negligible, since  (unlike <code>MeshSource</code>) it is a cloneable 
+reference to GPU allocated resources.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.MeshSource.html"
+                                  title='struct flight::mesh::MeshSource'>MeshSource</a></td>
+                           <td class='docblock-short'>
+                                <p>A mesh storage object and builder that sent as drawable geometry to the GPU.
+Once uploaded, this mesh can only be rendered using a <code>Painter</code> whose 
+associated style supports the given vertex and material type (<code>&lt;V, M&gt;</code>).
+In addition, the painter must be setup for this mesh&#39;s primitive type.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Vert.html"
+                                  title='struct flight::mesh::Vert'>Vert</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos only.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.VertC.html"
+                                  title='struct flight::mesh::VertC'>VertC</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos and color.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.VertN.html"
+                                  title='struct flight::mesh::VertN'>VertN</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos and norm.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.VertNC.html"
+                                  title='struct flight::mesh::VertNC'>VertNC</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos, norm, and color.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.VertNT.html"
+                                  title='struct flight::mesh::VertNT'>VertNT</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos, norm, and tex.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.VertNTT.html"
+                                  title='struct flight::mesh::VertNTT'>VertNTT</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that includes pos, norm, tan, bitan, and tex.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Indexing.html"
+                                  title='enum flight::mesh::Indexing'>Indexing</a></td>
+                           <td class='docblock-short'>
+                                <p>A scheme for selecting vertices to combine into primitives.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.Primitive.html"
+                                  title='enum flight::mesh::Primitive'>Primitive</a></td>
+                           <td class='docblock-short'>
+                                <p>Describes what geometric primitives are created from vertex data.</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.HasColor.html"
+                                  title='trait flight::mesh::HasColor'>HasColor</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex with a color component.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.HasNorm.html"
+                                  title='trait flight::mesh::HasNorm'>HasNorm</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex with a norm component.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.HasTan.html"
+                                  title='trait flight::mesh::HasTan'>HasTan</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex with a tan component.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.HasTex.html"
+                                  title='trait flight::mesh::HasTex'>HasTex</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex with a tex component.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Vertex.html"
+                                  title='trait flight::mesh::Vertex'>Vertex</a></td>
+                           <td class='docblock-short'>
+                                <p>A type that can be used as a vertex.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.WithColor.html"
+                                  title='trait flight::mesh::WithColor'>WithColor</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that can have a color attribute added.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.WithNorm.html"
+                                  title='trait flight::mesh::WithNorm'>WithNorm</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that can have a norm attribute added.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.WithTan.html"
+                                  title='trait flight::mesh::WithTan'>WithTan</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that can have tan and bitan attributes added.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.WithTex.html"
+                                  title='trait flight::mesh::WithTex'>WithTex</a></td>
+                           <td class='docblock-short'>
+                                <p>A vertex that can have a tex attribute added.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

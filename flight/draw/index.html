@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `draw` mod in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, draw">
+
+    <title>flight::draw - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Module draw</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#constants">Constants</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'><a href='../index.html'>flight</a></p><script>window.sidebarCurrent = {name: 'draw', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>flight</a>::<wbr><a class="mod" href=''>draw</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/draw/mod.rs.html#1-211' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Mesh drawing</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.DrawParams.html"
+                                  title='struct flight::draw::DrawParams'>DrawParams</a></td>
+                           <td class='docblock-short'>
+                                <p>Parameters to the draw system</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.EyeParams.html"
+                                  title='struct flight::draw::EyeParams'>EyeParams</a></td>
+                           <td class='docblock-short'>
+                                <p>Parameters that control the rendering of an eye</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Painter.html"
+                                  title='struct flight::draw::Painter'>Painter</a></td>
+                           <td class='docblock-short'>
+                                <p>The painter is responsible for drawing meshes. Painters 
+are instantiated with an associated style which specifies
+the data required for drawing (vertex type, material params,
+configuration) and implements the drawing pipeline. Note that
+a painter can only be used with primitive types that have been
+passed to <code>setup</code>.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PbrInputs.html"
+                                  title='struct flight::draw::PbrInputs'>PbrInputs</a></td>
+                           <td class='docblock-short'>
+                                <p>The configuration for physically based rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PbrMaterial.html"
+                                  title='struct flight::draw::PbrMaterial'>PbrMaterial</a></td>
+                           <td class='docblock-short'>
+                                <p>The collection of mesh textures used by physically based rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.PbrStyle.html"
+                                  title='struct flight::draw::PbrStyle'>PbrStyle</a></td>
+                           <td class='docblock-short'>
+                                <p>Draws meshes using a physically based rendering pipeline</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SolidInputs.html"
+                                  title='struct flight::draw::SolidInputs'>SolidInputs</a></td>
+                           <td class='docblock-short'>
+                                <p>The configuration for solid color rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.SolidStyle.html"
+                                  title='struct flight::draw::SolidStyle'>SolidStyle</a></td>
+                           <td class='docblock-short'>
+                                <p>Draws objects in solid colors (without lighting) using the per-vertex color attribute</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UberEnv.html"
+                                  title='struct flight::draw::UberEnv'>UberEnv</a></td>
+                           <td class='docblock-short'>
+                                <p>The scene environment</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UberInputs.html"
+                                  title='struct flight::draw::UberInputs'>UberInputs</a></td>
+                           <td class='docblock-short'>
+                                <p>The configuration for physically based rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UberMaterial.html"
+                                  title='struct flight::draw::UberMaterial'>UberMaterial</a></td>
+                           <td class='docblock-short'>
+                                <p>The collection of mesh textures used by physically based rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UberStyle.html"
+                                  title='struct flight::draw::UberStyle'>UberStyle</a></td>
+                           <td class='docblock-short'>
+                                <p>Draws meshes using a physically based rendering pipeline</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UnishadeInputs.html"
+                                  title='struct flight::draw::UnishadeInputs'>UnishadeInputs</a></td>
+                           <td class='docblock-short'>
+                                <p>The configuration for unishade rendering</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.UnishadeStyle.html"
+                                  title='struct flight::draw::UnishadeStyle'>UnishadeStyle</a></td>
+                           <td class='docblock-short'>
+                                <p>Draws objects with very simple lighting: one color on the top and a different color on the bottom</p>
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="constant" href="constant.LIGHT_COUNT.html"
+                                  title='constant flight::draw::LIGHT_COUNT'>LIGHT_COUNT</a></td>
+                           <td class='docblock-short'>
+                                <p>The maximum number of point lights that can be simulated</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.Style.html"
+                                  title='trait flight::draw::Style'>Style</a></td>
+                           <td class='docblock-short'>
+                                <p>Implements a particular drawing process and visual style.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.StyleInputs.html"
+                                  title='trait flight::draw::StyleInputs'>StyleInputs</a></td>
+                           <td class='docblock-short'>
+                                <p>Required configuration options for a <code>Style</code></p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

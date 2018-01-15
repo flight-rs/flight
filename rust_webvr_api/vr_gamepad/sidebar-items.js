@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["VRGamepadHand",""]],"struct":[["VRGamepadButton",""],["VRGamepadData",""],["VRGamepadState",""]],"trait":[["VRGamepad",""]],"type":[["VRGamepadPtr",""]]});

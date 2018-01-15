@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `VRServiceManager` struct in crate `rust_webvr`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, VRServiceManager">
+
+    <title>rust_webvr::VRServiceManager - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct VRServiceManager</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.new">new</a><a href="#method.register_defaults">register_defaults</a><a href="#method.register_mock">register_mock</a><a href="#method.register">register</a><a href="#method.initialize_services">initialize_services</a><a href="#method.get_displays">get_displays</a><a href="#method.get_gamepads">get_gamepads</a><a href="#method.get_display">get_display</a><a href="#method.poll_events">poll_events</a><a href="#method.is_initialized">is_initialized</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Drop">Drop</a></div></div><p class='location'><a href='index.html'>rust_webvr</a></p><script>window.sidebarCurrent = {name: 'VRServiceManager', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='index.html'>rust_webvr</a>::<wbr><a class="struct" href=''>VRServiceManager</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#24-29' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct VRServiceManager { /* fields omitted */ }</pre>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><code>impl <a class="struct" href="../rust_webvr/struct.VRServiceManager.html" title="struct rust_webvr::VRServiceManager">VRServiceManager</a></code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#39-133' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>pub fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class="struct" href="../rust_webvr/struct.VRServiceManager.html" title="struct rust_webvr::VRServiceManager">VRServiceManager</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#40-47' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.register_defaults' class="method"><span id='register_defaults.v' class='invisible'><code>pub fn <a href='#method.register_defaults' class='fnname'>register_defaults</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#50-66' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.register_mock' class="method"><span id='register_mock.v' class='invisible'><code>pub fn <a href='#method.register_mock' class='fnname'>register_mock</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#71-74' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.register' class="method"><span id='register.v' class='invisible'><code>pub fn <a href='#method.register' class='fnname'>register</a>(&amp;mut self, service: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;<a class="trait" href="../rust_webvr_api/vr_service/trait.VRService.html" title="trait rust_webvr_api::vr_service::VRService">VRService</a>&gt;)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#78-80' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.initialize_services' class="method"><span id='initialize_services.v' class='invisible'><code>pub fn <a href='#method.initialize_services' class='fnname'>initialize_services</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#83-94' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.get_displays' class="method"><span id='get_displays.v' class='invisible'><code>pub fn <a href='#method.get_displays' class='fnname'>get_displays</a>(&amp;mut self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="../rust_webvr_api/vr_display/type.VRDisplayPtr.html" title="type rust_webvr_api::vr_display::VRDisplayPtr">VRDisplayPtr</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#96-105' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.get_gamepads' class="method"><span id='get_gamepads.v' class='invisible'><code>pub fn <a href='#method.get_gamepads' class='fnname'>get_gamepads</a>(&amp;mut self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="type" href="../rust_webvr_api/vr_gamepad/type.VRGamepadPtr.html" title="type rust_webvr_api::vr_gamepad::VRGamepadPtr">VRGamepadPtr</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#107-116' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.get_display' class="method"><span id='get_display.v' class='invisible'><code>pub fn <a href='#method.get_display' class='fnname'>get_display</a>(&amp;self, display_id: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="type" href="../rust_webvr_api/vr_display/type.VRDisplayPtr.html" title="type rust_webvr_api::vr_display::VRDisplayPtr">VRDisplayPtr</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#118-120' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.poll_events' class="method"><span id='poll_events.v' class='invisible'><code>pub fn <a href='#method.poll_events' class='fnname'>poll_events</a>(&amp;mut self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../rust_webvr_api/vr_event/enum.VREvent.html" title="enum rust_webvr_api::vr_event::VREvent">VREvent</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#122-128' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.is_initialized' class="method"><span id='is_initialized.v' class='invisible'><code>pub fn <a href='#method.is_initialized' class='fnname'>is_initialized</a>(&amp;self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#130-132' title='goto source code'>[src]</a></span></h4>
+</div>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+        <h3 id='impl-Drop' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html" title="trait core::ops::drop::Drop">Drop</a> for <a class="struct" href="../rust_webvr/struct.VRServiceManager.html" title="struct rust_webvr::VRServiceManager">VRServiceManager</a></code><a href='#impl-Drop' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#31-37' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.drop' class="method"><span id='drop.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop' class='fnname'>drop</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../src/rust_webvr/vr_manager.rs.html#32-36' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Executes the destructor for this type. <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html#tymethod.drop">Read more</a></p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "rust_webvr";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

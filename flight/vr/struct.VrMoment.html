@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `VrMoment` struct in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, VrMoment">
+
+    <title>flight::vr::VrMoment - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct VrMoment</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.stage">stage</a><a href="#structfield.inverse_stage">inverse_stage</a><a href="#structfield.exit">exit</a><a href="#structfield.paused">paused</a><a href="#structfield.new_controllers">new_controllers</a><a href="#structfield.timestamp">timestamp</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.controller">controller</a><a href="#method.controllers">controllers</a><a href="#method.hmd">hmd</a><a href="#method.submit">submit</a></div></div><p class='location'><a href='../index.html'>flight</a>::<wbr><a href='index.html'>vr</a></p><script>window.sidebarCurrent = {name: 'VrMoment', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>flight</a>::<wbr><a href='index.html'>vr</a>::<wbr><a class="struct" href=''>VrMoment</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/vr.rs.html#206-225' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct VrMoment {
+    pub stage: <a class="type" href="../../nalgebra/geometry/similarity_alias/type.Similarity3.html" title="type nalgebra::geometry::similarity_alias::Similarity3">Similarity3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;,
+    pub inverse_stage: <a class="type" href="../../nalgebra/geometry/similarity_alias/type.Similarity3.html" title="type nalgebra::geometry::similarity_alias::Similarity3">Similarity3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;,
+    pub exit: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    pub paused: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    pub new_controllers: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../flight/vr/enum.ControllerRef.html" title="enum flight::vr::ControllerRef">ControllerRef</a>&gt;,
+    pub timestamp: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>,
+    // some fields omitted
+}</pre><div class='docblock'><p>Instantaneous information about the VR system retrieved from <code>VrContext::sync()</code>.
+This can be used directly or to update some persistent state.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.stage" class="structfield small-section-header">
+                           <a href="#structfield.stage" class="anchor field"></a>
+                           <span id="stage.v" class='invisible'>
+                           <code>stage: <a class="type" href="../../nalgebra/geometry/similarity_alias/type.Similarity3.html" title="type nalgebra::geometry::similarity_alias::Similarity3">Similarity3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;</code>
+                           </span></span><div class='docblock'><p>The stage transform (moves the origin to the center of the room)</p>
+</div><span id="structfield.inverse_stage" class="structfield small-section-header">
+                           <a href="#structfield.inverse_stage" class="anchor field"></a>
+                           <span id="inverse_stage.v" class='invisible'>
+                           <code>inverse_stage: <a class="type" href="../../nalgebra/geometry/similarity_alias/type.Similarity3.html" title="type nalgebra::geometry::similarity_alias::Similarity3">Similarity3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;</code>
+                           </span></span><div class='docblock'><p>The inverse stage transform (moves the center of the room to the origin)</p>
+</div><span id="structfield.exit" class="structfield small-section-header">
+                           <a href="#structfield.exit" class="anchor field"></a>
+                           <span id="exit.v" class='invisible'>
+                           <code>exit: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span><div class='docblock'><p>Has the VR system requested the application to exit</p>
+</div><span id="structfield.paused" class="structfield small-section-header">
+                           <a href="#structfield.paused" class="anchor field"></a>
+                           <span id="paused.v" class='invisible'>
+                           <code>paused: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code>
+                           </span></span><div class='docblock'><p>Has the VR system requested the application to pause movement (should still sync and submit frames)</p>
+</div><span id="structfield.new_controllers" class="structfield small-section-header">
+                           <a href="#structfield.new_controllers" class="anchor field"></a>
+                           <span id="new_controllers.v" class='invisible'>
+                           <code>new_controllers: <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;<a class="enum" href="../../flight/vr/enum.ControllerRef.html" title="enum flight::vr::ControllerRef">ControllerRef</a>&gt;</code>
+                           </span></span><div class='docblock'><p>References to controllers that have connected since the last sync</p>
+</div><span id="structfield.timestamp" class="structfield small-section-header">
+                           <a href="#structfield.timestamp" class="anchor field"></a>
+                           <span id="timestamp.v" class='invisible'>
+                           <code>timestamp: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a></code>
+                           </span></span><div class='docblock'><p>Relative time of this moment (seconds)</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><code>impl <a class="struct" href="../../flight/vr/struct.VrMoment.html" title="struct flight::vr::VrMoment">VrMoment</a></code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#227-251' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.controller' class="method"><span id='controller.v' class='invisible'><code>pub fn <a href='#method.controller' class='fnname'>controller</a>(&amp;self, role: <a class="enum" href="../../flight/vr/enum.ControllerRef.html" title="enum flight::vr::ControllerRef">ControllerRef</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="struct" href="../../flight/vr/struct.ControllerMoment.html" title="struct flight::vr::ControllerMoment">ControllerMoment</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#229-231' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Get a controller by reference if such a controller is connected.</p>
+</div><h4 id='method.controllers' class="method"><span id='controllers.v' class='invisible'><code>pub fn <a href='#method.controllers' class='fnname'>controllers</a>&lt;'a&gt;(&amp;'a self) -&gt; <a class="type" href="../../flight/vr/type.ControllerIter.html" title="type flight::vr::ControllerIter">ControllerIter</a>&lt;'a&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#234-236' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Iterate over all connected controllers.</p>
+</div><h4 id='method.hmd' class="method"><span id='hmd.v' class='invisible'><code>pub fn <a href='#method.hmd' class='fnname'>hmd</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;&amp;<a class="struct" href="../../flight/vr/struct.HmdMoment.html" title="struct flight::vr::HmdMoment">HmdMoment</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#239-241' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Get instantaneous information about the HMD if it is connected.</p>
+</div><h4 id='method.submit' class="method"><span id='submit.v' class='invisible'><code>pub fn <a href='#method.submit' class='fnname'>submit</a>(self, ctx: &amp;mut <a class="struct" href="../../flight/vr/struct.VrContext.html" title="struct flight::vr::VrContext">VrContext</a>)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#246-250' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Submit the rendered scene. This ends the applicability
+of this information, since it only applies to the
+state of the VR system at the last sync.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

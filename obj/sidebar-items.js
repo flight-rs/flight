@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Group",""],["IndexTuple",""],["Material",""],["Mtl",""],["Obj",""],["Object",""]],"trait":[["GenPolygon",""]],"type":[["SimplePolygon",""]]});

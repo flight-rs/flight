@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `rust_webvr_api` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, rust_webvr_api">
+
+    <title>rust_webvr_api - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate rust_webvr_api</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#reexports">Reexports</a></li><li><a href="#modules">Modules</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'rust_webvr_api', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>rust_webvr_api</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/rust_webvr_api/lib.rs.html#1-50' title='goto source code'>[src]</a></span></h1>
+<h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use vr_display::<a class="trait" href="../rust_webvr_api/vr_display/trait.VRDisplay.html" title="trait rust_webvr_api::vr_display::VRDisplay">VRDisplay</a>;</code></td></tr><tr><td><code>pub use vr_display::<a class="type" href="../rust_webvr_api/vr_display/type.VRDisplayPtr.html" title="type rust_webvr_api::vr_display::VRDisplayPtr">VRDisplayPtr</a>;</code></td></tr><tr><td><code>pub use vr_service::<a class="trait" href="../rust_webvr_api/vr_service/trait.VRService.html" title="trait rust_webvr_api::vr_service::VRService">VRService</a>;</code></td></tr><tr><td><code>pub use vr_service::<a class="trait" href="../rust_webvr_api/vr_service/trait.VRServiceCreator.html" title="trait rust_webvr_api::vr_service::VRServiceCreator">VRServiceCreator</a>;</code></td></tr><tr><td><code>pub use vr_display_data::<a class="struct" href="../rust_webvr_api/vr_display_data/struct.VRDisplayData.html" title="struct rust_webvr_api::vr_display_data::VRDisplayData">VRDisplayData</a>;</code></td></tr><tr><td><code>pub use vr_display_capabilities::<a class="struct" href="../rust_webvr_api/vr_display_capabilities/struct.VRDisplayCapabilities.html" title="struct rust_webvr_api::vr_display_capabilities::VRDisplayCapabilities">VRDisplayCapabilities</a>;</code></td></tr><tr><td><code>pub use vr_eye::<a class="enum" href="../rust_webvr_api/vr_eye/enum.VREye.html" title="enum rust_webvr_api::vr_eye::VREye">VREye</a>;</code></td></tr><tr><td><code>pub use vr_eye_parameters::<a class="struct" href="../rust_webvr_api/vr_eye_parameters/struct.VREyeParameters.html" title="struct rust_webvr_api::vr_eye_parameters::VREyeParameters">VREyeParameters</a>;</code></td></tr><tr><td><code>pub use vr_framebuffer::<a class="struct" href="../rust_webvr_api/vr_framebuffer/struct.VRFramebuffer.html" title="struct rust_webvr_api::vr_framebuffer::VRFramebuffer">VRFramebuffer</a>;</code></td></tr><tr><td><code>pub use vr_framebuffer::<a class="struct" href="../rust_webvr_api/vr_framebuffer/struct.VRFramebufferAttributes.html" title="struct rust_webvr_api::vr_framebuffer::VRFramebufferAttributes">VRFramebufferAttributes</a>;</code></td></tr><tr><td><code>pub use vr_framebuffer::<a class="struct" href="../rust_webvr_api/vr_framebuffer/struct.VRViewport.html" title="struct rust_webvr_api::vr_framebuffer::VRViewport">VRViewport</a>;</code></td></tr><tr><td><code>pub use vr_frame_data::<a class="struct" href="../rust_webvr_api/vr_frame_data/struct.VRFrameData.html" title="struct rust_webvr_api::vr_frame_data::VRFrameData">VRFrameData</a>;</code></td></tr><tr><td><code>pub use vr_layer::<a class="struct" href="../rust_webvr_api/vr_layer/struct.VRLayer.html" title="struct rust_webvr_api::vr_layer::VRLayer">VRLayer</a>;</code></td></tr><tr><td><code>pub use vr_pose::<a class="struct" href="../rust_webvr_api/vr_pose/struct.VRPose.html" title="struct rust_webvr_api::vr_pose::VRPose">VRPose</a>;</code></td></tr><tr><td><code>pub use vr_stage_parameters::<a class="struct" href="../rust_webvr_api/vr_stage_parameters/struct.VRStageParameters.html" title="struct rust_webvr_api::vr_stage_parameters::VRStageParameters">VRStageParameters</a>;</code></td></tr><tr><td><code>pub use vr_event::<a class="enum" href="../rust_webvr_api/vr_event/enum.VREvent.html" title="enum rust_webvr_api::vr_event::VREvent">VREvent</a>;</code></td></tr><tr><td><code>pub use vr_event::<a class="enum" href="../rust_webvr_api/vr_event/enum.VRDisplayEvent.html" title="enum rust_webvr_api::vr_event::VRDisplayEvent">VRDisplayEvent</a>;</code></td></tr><tr><td><code>pub use vr_event::<a class="enum" href="../rust_webvr_api/vr_event/enum.VRDisplayEventReason.html" title="enum rust_webvr_api::vr_event::VRDisplayEventReason">VRDisplayEventReason</a>;</code></td></tr><tr><td><code>pub use vr_event::<a class="enum" href="../rust_webvr_api/vr_event/enum.VRGamepadEvent.html" title="enum rust_webvr_api::vr_event::VRGamepadEvent">VRGamepadEvent</a>;</code></td></tr><tr><td><code>pub use vr_field_view::<a class="struct" href="../rust_webvr_api/vr_field_view/struct.VRFieldOfView.html" title="struct rust_webvr_api::vr_field_view::VRFieldOfView">VRFieldOfView</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="trait" href="../rust_webvr_api/vr_gamepad/trait.VRGamepad.html" title="trait rust_webvr_api::vr_gamepad::VRGamepad">VRGamepad</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="type" href="../rust_webvr_api/vr_gamepad/type.VRGamepadPtr.html" title="type rust_webvr_api::vr_gamepad::VRGamepadPtr">VRGamepadPtr</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="enum" href="../rust_webvr_api/vr_gamepad/enum.VRGamepadHand.html" title="enum rust_webvr_api::vr_gamepad::VRGamepadHand">VRGamepadHand</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="struct" href="../rust_webvr_api/vr_gamepad/struct.VRGamepadData.html" title="struct rust_webvr_api::vr_gamepad::VRGamepadData">VRGamepadData</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="struct" href="../rust_webvr_api/vr_gamepad/struct.VRGamepadState.html" title="struct rust_webvr_api::vr_gamepad::VRGamepadState">VRGamepadState</a>;</code></td></tr><tr><td><code>pub use vr_gamepad::<a class="struct" href="../rust_webvr_api/vr_gamepad/struct.VRGamepadButton.html" title="struct rust_webvr_api::vr_gamepad::VRGamepadButton">VRGamepadButton</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="utils/index.html"
+                                  title='mod rust_webvr_api::utils'>utils</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_display/index.html"
+                                  title='mod rust_webvr_api::vr_display'>vr_display</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_display_capabilities/index.html"
+                                  title='mod rust_webvr_api::vr_display_capabilities'>vr_display_capabilities</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_display_data/index.html"
+                                  title='mod rust_webvr_api::vr_display_data'>vr_display_data</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_event/index.html"
+                                  title='mod rust_webvr_api::vr_event'>vr_event</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_eye/index.html"
+                                  title='mod rust_webvr_api::vr_eye'>vr_eye</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_eye_parameters/index.html"
+                                  title='mod rust_webvr_api::vr_eye_parameters'>vr_eye_parameters</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_field_view/index.html"
+                                  title='mod rust_webvr_api::vr_field_view'>vr_field_view</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_frame_data/index.html"
+                                  title='mod rust_webvr_api::vr_frame_data'>vr_frame_data</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_framebuffer/index.html"
+                                  title='mod rust_webvr_api::vr_framebuffer'>vr_framebuffer</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_gamepad/index.html"
+                                  title='mod rust_webvr_api::vr_gamepad'>vr_gamepad</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_layer/index.html"
+                                  title='mod rust_webvr_api::vr_layer'>vr_layer</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_pose/index.html"
+                                  title='mod rust_webvr_api::vr_pose'>vr_pose</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_service/index.html"
+                                  title='mod rust_webvr_api::vr_service'>vr_service</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr_stage_parameters/index.html"
+                                  title='mod rust_webvr_api::vr_stage_parameters'>vr_stage_parameters</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "rust_webvr_api";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Vert` struct in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Vert">
+
+    <title>flight::mesh::Vert - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct Vert</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.pos">pos</a></div><a class="sidebar-title" href="#implementations">Trait Implementations</a><div class="sidebar-links"><a href="#impl-Clone">Clone</a><a href="#impl-Copy">Copy</a><a href="#impl-Debug">Debug</a><a href="#impl-PartialEq">PartialEq</a><a href="#impl-Pod">Pod</a><a href="#impl-Structure%3CFormat%3E">Structure&lt;Format&gt;</a><a href="#impl-Vertex">Vertex</a><a href="#impl-WithNorm">WithNorm</a><a href="#impl-WithColor">WithColor</a></div></div><p class='location'><a href='../index.html'>flight</a>::<wbr><a href='index.html'>mesh</a></p><script>window.sidebarCurrent = {name: 'Vert', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>flight</a>::<wbr><a href='index.html'>mesh</a>::<wbr><a class="struct" href=''>Vert</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span></span></h1>
+<pre class='rust struct'>pub struct Vert {
+    pub pos: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 3]</a>,
+}</pre><div class='docblock'><p>A vertex that includes pos only.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.pos" class="structfield small-section-header">
+                           <a href="#structfield.pos" class="anchor field"></a>
+                           <span id="pos.v" class='invisible'>
+                           <code>pos: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 3]</a></code>
+                           </span></span>
+            <h2 id='implementations' class='small-section-header'>
+              Trait Implementations<a href='#implementations' class='anchor'></a>
+            </h2>
+        <h3 id='impl-Clone' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html" title="trait core::clone::Clone">Clone</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Clone' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.clone' class="method"><span id='clone.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code></span></h4>
+<div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class="method"><span id='clone_from.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;</a>Self)</code></span><span class='out-of-band'><div class='ghost'></div><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div><a class='srclink' href='https://doc.rust-lang.org/nightly/src/core/clone.rs.html#112-114' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div><h3 id='impl-Copy' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html" title="trait core::marker::Copy">Copy</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Copy' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'></div><h3 id='impl-Debug' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html" title="trait core::fmt::Debug">Debug</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Debug' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class="method"><span id='fmt.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class="struct" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html" title="struct core::fmt::Formatter">Formatter</a>) -&gt; <a class="type" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html" title="type core::fmt::Result">Result</a></code></span></h4>
+<div class='docblock'><p>Formats the value using the given formatter. <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt">Read more</a></p>
+</div></div><h3 id='impl-PartialEq' class='impl'><span class='in-band'><code>impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html" title="trait core::cmp::PartialEq">PartialEq</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-PartialEq' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.eq' class="method"><span id='eq.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></h4>
+<div class='docblock'><p>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used by <code>==</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq">Read more</a></p>
+</div><h4 id='method.ne' class="method"><span id='ne.v' class='invisible'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a></code></span></h4>
+<div class='docblock'><p>This method tests for <code>!=</code>.</p>
+</div></div><h3 id='impl-Pod' class='impl'><span class='in-band'><code>impl <a class="trait" href="../../gfx_core/memory/trait.Pod.html" title="trait gfx_core::memory::Pod">Pod</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Pod' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'></div><h3 id='impl-Structure%3CFormat%3E' class='impl'><span class='in-band'><code>impl <a class="trait" href="../../gfx/pso/buffer/trait.Structure.html" title="trait gfx::pso::buffer::Structure">Structure</a>&lt;<a class="struct" href="../../gfx_core/format/struct.Format.html" title="struct gfx_core::format::Format">Format</a>&gt; for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Structure%3CFormat%3E' class='anchor'></a></span><span class='out-of-band'></span></h3>
+<div class='impl-items'><h4 id='method.query' class="method"><span id='query.v' class='invisible'><code>fn <a href='../../gfx/pso/buffer/trait.Structure.html#tymethod.query' class='fnname'>query</a>(name: &amp;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../gfx_core/pso/struct.Element.html" title="struct gfx_core::pso::Element">Element</a>&lt;<a class="struct" href="../../gfx_core/format/struct.Format.html" title="struct gfx_core::format::Format">Format</a>&gt;&gt;</code></span></h4>
+<div class='docblock'><p>Get the layout of an element by name.</p>
+</div></div><h3 id='impl-Vertex' class='impl'><span class='in-band'><code>impl <a class="trait" href="../../flight/mesh/trait.Vertex.html" title="trait flight::mesh::Vertex">Vertex</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-Vertex' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#170-173' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.pos' class="method"><span id='pos.v-1' class='invisible'><code>fn <a href='../../flight/mesh/trait.Vertex.html#tymethod.pos' class='fnname'>pos</a>(&amp;self) -&gt; &amp;<a class="type" href="../../nalgebra/geometry/point_alias/type.Point3.html" title="type nalgebra::geometry::point_alias::Point3">Point3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#171' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Get the vertex&#39;s position</p>
+</div><h4 id='method.mut_pos' class="method"><span id='mut_pos.v' class='invisible'><code>fn <a href='../../flight/mesh/trait.Vertex.html#tymethod.mut_pos' class='fnname'>mut_pos</a>(&amp;mut self) -&gt; &amp;mut <a class="type" href="../../nalgebra/geometry/point_alias/type.Point3.html" title="type nalgebra::geometry::point_alias::Point3">Point3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#172' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Change the vertex&#39;s position</p>
+</div></div><h3 id='impl-WithNorm' class='impl'><span class='in-band'><code>impl <a class="trait" href="../../flight/mesh/trait.WithNorm.html" title="trait flight::mesh::WithNorm">WithNorm</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-WithNorm' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#122-125' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.With' class="type"><span id='With.t' class='invisible'><code>type <a href='../../flight/mesh/trait.WithNorm.html#associatedtype.With' class="type">With</a> = <a class="struct" href="../../flight/mesh/struct.VertN.html" title="struct flight::mesh::VertN">VertN</a></code></span></h4>
+<h4 id='method.with_norm' class="method"><span id='with_norm.v' class='invisible'><code>fn <a href='../../flight/mesh/trait.WithNorm.html#tymethod.with_norm' class='fnname'>with_norm</a>(self, n: <a class="type" href="../../nalgebra/core/alias/type.Vector3.html" title="type nalgebra::core::alias::Vector3">Vector3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;) -&gt; <a class="struct" href="../../flight/mesh/struct.VertN.html" title="struct flight::mesh::VertN">VertN</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#124' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Add a normal vector to this vertex&#39;s attributes</p>
+</div></div><h3 id='impl-WithColor' class='impl'><span class='in-band'><code>impl <a class="trait" href="../../flight/mesh/trait.WithColor.html" title="trait flight::mesh::WithColor">WithColor</a> for <a class="struct" href="../../flight/mesh/struct.Vert.html" title="struct flight::mesh::Vert">Vert</a></code><a href='#impl-WithColor' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#128-131' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.With-1' class="type"><span id='With.t-1' class='invisible'><code>type <a href='../../flight/mesh/trait.WithColor.html#associatedtype.With' class="type">With</a> = <a class="struct" href="../../flight/mesh/struct.VertC.html" title="struct flight::mesh::VertC">VertC</a></code></span></h4>
+<h4 id='method.with_color' class="method"><span id='with_color.v' class='invisible'><code>fn <a href='../../flight/mesh/trait.WithColor.html#tymethod.with_color' class='fnname'>with_color</a>(self, c: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">[</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.array.html">; 3]</a>) -&gt; <a class="struct" href="../../flight/mesh/struct.VertC.html" title="struct flight::mesh::VertC">VertC</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/mesh.rs.html#130' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Add a color to this vertex&#39;s attributes</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

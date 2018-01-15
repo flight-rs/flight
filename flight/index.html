@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `flight` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, flight">
+
+    <title>flight - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate flight</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><p class='location'></p><script>window.sidebarCurrent = {name: 'flight', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>flight</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/flight/lib.rs.html#2-122' title='goto source code'>[src]</a></span></h1>
+<h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="draw/index.html"
+                                  title='mod flight::draw'>draw</a></td>
+                           <td class='docblock-short'>
+                                <p>Mesh drawing</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="load/index.html"
+                                  title='mod flight::load'>load</a></td>
+                           <td class='docblock-short'>
+                                <p>Asset loading</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="mesh/index.html"
+                                  title='mod flight::mesh'>mesh</a></td>
+                           <td class='docblock-short'>
+                                <p>Mesh specification and upload</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="mod" href="vr/index.html"
+                                  title='mod flight::vr'>vr</a></td>
+                           <td class='docblock-short'>
+                                <p>VR hardware interface</p>
+                           </td>
+                       </tr></table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Error.html"
+                                  title='struct flight::Error'>Error</a></td>
+                           <td class='docblock-short'>
+                                <p>Combines all errors that can occur in the flight API</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Light.html"
+                                  title='struct flight::Light'>Light</a></td>
+                           <td class='docblock-short'>
+                                <p>Parameters for a point light source</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Sun.html"
+                                  title='struct flight::Sun'>Sun</a></td>
+                           <td class='docblock-short'>
+                                <p>Parameters for a sun light source</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="struct" href="struct.Texture.html"
+                                  title='struct flight::Texture'>Texture</a></td>
+                           <td class='docblock-short'>
+                                <p>GPU-allocated texture object. Since this is just a reference to assets stored on the GPU, 
+its memory footprint is negligible and it can be cloned freely.</p>
+                           </td>
+                       </tr></table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="enum" href="enum.ErrorKind.html"
+                                  title='enum flight::ErrorKind'>ErrorKind</a></td>
+                           <td class='docblock-short'>
+                                <p>Error type enum</p>
+                           </td>
+                       </tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="trait" href="trait.NativeRepr.html"
+                                  title='trait flight::NativeRepr'>NativeRepr</a></td>
+                           <td class='docblock-short'>
+                                <p>Zero-cost conversion between a complex wrapper and its native form.
+For example, between <code>&amp;mut Vector2&lt;f32&gt;</code> and <code>&amp;mut [f32; 2]</code>.</p>
+                           </td>
+                       </tr></table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ColorFormat.html"
+                                  title='type flight::ColorFormat'>ColorFormat</a></td>
+                           <td class='docblock-short'>
+                                <p>The pixel format of color drawing targets</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.DepthFormat.html"
+                                  title='type flight::DepthFormat'>DepthFormat</a></td>
+                           <td class='docblock-short'>
+                                <p>The pixel format of depth drawing targets</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.DepthRef.html"
+                                  title='type flight::DepthRef'>DepthRef</a></td>
+                           <td class='docblock-short'>
+                                <p>Reference to a GPU depth target</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.PbrMesh.html"
+                                  title='type flight::PbrMesh'>PbrMesh</a></td>
+                           <td class='docblock-short'>
+                                <p>A mesh that can be physically (realistically) rendered</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ShaderResult.html"
+                                  title='type flight::ShaderResult'>ShaderResult</a></td>
+                           <td class='docblock-short'>
+                                <p>The result of compiling and linking shader programs</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.ShadowDepthFormat.html"
+                                  title='type flight::ShadowDepthFormat'>ShadowDepthFormat</a></td>
+                           <td class='docblock-short'>
+                                <p>The pixel format of shadow depth buffers</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.TargetRef.html"
+                                  title='type flight::TargetRef'>TargetRef</a></td>
+                           <td class='docblock-short'>
+                                <p>Reference to a GPU color target</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class="type" href="type.UberMesh.html"
+                                  title='type flight::UberMesh'>UberMesh</a></td>
+                           <td class='docblock-short'>
+                                
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

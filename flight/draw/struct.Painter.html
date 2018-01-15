@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Painter` struct in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Painter">
+
+    <title>flight::draw::Painter - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct Painter</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.clear_env">clear_env</a><a href="#method.new">new</a><a href="#method.setup">setup</a><a href="#method.try_draw">try_draw</a><a href="#method.draw">draw</a><a href="#method.cfg">cfg</a></div></div><p class='location'><a href='../index.html'>flight</a>::<wbr><a href='index.html'>draw</a></p><script>window.sidebarCurrent = {name: 'Painter', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>flight</a>::<wbr><a href='index.html'>draw</a>::<wbr><a class="struct" href=''>Painter</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/draw/mod.rs.html#35-38' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Painter&lt;R:&nbsp;<a class="trait" href="../../gfx_core/trait.Resources.html" title="trait gfx_core::Resources">Resources</a>, E:&nbsp;<a class="trait" href="../../flight/draw/trait.Style.html" title="trait flight::draw::Style">Style</a>&lt;R&gt;&gt; { /* fields omitted */ }</pre><div class='docblock'><p>The painter is responsible for drawing meshes. Painters 
+are instantiated with an associated style which specifies
+the data required for drawing (vertex type, material params,
+configuration) and implements the drawing pipeline. Note that
+a painter can only be used with primitive types that have been
+passed to <code>setup</code>.</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><code>impl&lt;R:&nbsp;<a class="trait" href="../../gfx_core/trait.Resources.html" title="trait gfx_core::Resources">Resources</a>&gt; <a class="struct" href="../../flight/draw/struct.Painter.html" title="struct flight::draw::Painter">Painter</a>&lt;R, <a class="struct" href="../../flight/draw/struct.UberStyle.html" title="struct flight::draw::UberStyle">UberStyle</a>&lt;R&gt;&gt;</code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/uber.rs.html#327-363' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.clear_env' class="method"><span id='clear_env.v' class='invisible'><code>pub fn <a href='#method.clear_env' class='fnname'>clear_env</a>&lt;C:&nbsp;<a class="trait" href="../../gfx_core/command/trait.Buffer.html" title="trait gfx_core::command::Buffer">CommandBuffer</a>&lt;R&gt;&gt;(&amp;self, ctx: &amp;mut <a class="struct" href="../../flight/draw/struct.DrawParams.html" title="struct flight::draw::DrawParams">DrawParams</a>&lt;R, C&gt;)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/uber.rs.html#328-362' title='goto source code'>[src]</a></span></h4>
+</div><h3 id='impl-1' class='impl'><span class='in-band'><code>impl&lt;R:&nbsp;<a class="trait" href="../../gfx_core/trait.Resources.html" title="trait gfx_core::Resources">Resources</a>, E:&nbsp;<a class="trait" href="../../flight/draw/trait.Style.html" title="trait flight::draw::Style">Style</a>&lt;R&gt;&gt; <a class="struct" href="../../flight/draw/struct.Painter.html" title="struct flight::draw::Painter">Painter</a>&lt;R, E&gt;</code><a href='#impl-1' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#40-140' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>pub fn <a href='#method.new' class='fnname'>new</a>&lt;F:&nbsp;<a class="trait" href="../../gfx_core/factory/trait.Factory.html" title="trait gfx_core::factory::Factory">Factory</a>&lt;R&gt; + <a class="trait" href="../../gfx/factory/trait.FactoryExt.html" title="trait gfx::factory::FactoryExt">FactoryExt</a>&lt;R&gt;&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;f: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>F<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="../../flight/draw/struct.Painter.html" title="struct flight::draw::Painter">Painter</a>&lt;R, E&gt;, <a class="struct" href="../../flight/struct.Error.html" title="struct flight::Error">Error</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#42-47' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Create a new painter in the given style and using the given factory. </p>
+</div><h4 id='method.setup' class="method"><span id='setup.v' class='invisible'><code>pub fn <a href='#method.setup' class='fnname'>setup</a>&lt;F:&nbsp;<a class="trait" href="../../gfx_core/factory/trait.Factory.html" title="trait gfx_core::factory::Factory">Factory</a>&lt;R&gt; + <a class="trait" href="../../gfx/factory/trait.FactoryExt.html" title="trait gfx::factory::FactoryExt">FactoryExt</a>&lt;R&gt;&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;mut self, <br>&nbsp;&nbsp;&nbsp;&nbsp;f: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.reference.html">&amp;mut </a>F, <br>&nbsp;&nbsp;&nbsp;&nbsp;prim: <a class="enum" href="../../flight/mesh/enum.Primitive.html" title="enum flight::mesh::Primitive">Primitive</a><br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>, <a class="struct" href="../../flight/struct.Error.html" title="struct flight::Error">Error</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#51-61' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Add the ability to draw the given primitive. This must be done before a mesh using
+the primitive is drawn.</p>
+</div><h4 id='method.try_draw' class="method"><span id='try_draw.v' class='invisible'><code>pub fn <a href='#method.try_draw' class='fnname'>try_draw</a>&lt;C&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;ctx: &amp;mut <a class="struct" href="../../flight/draw/struct.DrawParams.html" title="struct flight::draw::DrawParams">DrawParams</a>&lt;R, C&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;model: <a class="type" href="../../nalgebra/geometry/transform_alias/type.Transform3.html" title="type nalgebra::geometry::transform_alias::Transform3">Transform3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;mesh: &amp;<a class="struct" href="../../flight/mesh/struct.Mesh.html" title="struct flight::mesh::Mesh">Mesh</a>&lt;R, E::<a class="type" href="../../flight/draw/trait.Style.html#associatedtype.Vertex" title="type flight::draw::Style::Vertex">Vertex</a>, E::<a class="type" href="../../flight/draw/trait.Style.html#associatedtype.Material" title="type flight::draw::Style::Material">Material</a>&gt;<br>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.unit.html">()</a>, <a class="struct" href="../../flight/struct.Error.html" title="struct flight::Error">Error</a>&gt; <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;C: <a class="trait" href="../../gfx_core/command/trait.Buffer.html" title="trait gfx_core::command::Buffer">CommandBuffer</a>&lt;R&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#65-118' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Attempt to draw a mesh with the given parameters and model matrix,
+returning <code>Err</code> if something goes wrong.</p>
+</div><h4 id='method.draw' class="method"><span id='draw.v' class='invisible'><code>pub fn <a href='#method.draw' class='fnname'>draw</a>&lt;C&gt;(<br>&nbsp;&nbsp;&nbsp;&nbsp;&amp;self, <br>&nbsp;&nbsp;&nbsp;&nbsp;ctx: &amp;mut <a class="struct" href="../../flight/draw/struct.DrawParams.html" title="struct flight::draw::DrawParams">DrawParams</a>&lt;R, C&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;model: <a class="type" href="../../nalgebra/geometry/transform_alias/type.Transform3.html" title="type nalgebra::geometry::transform_alias::Transform3">Transform3</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f32.html">f32</a>&gt;, <br>&nbsp;&nbsp;&nbsp;&nbsp;mesh: &amp;<a class="struct" href="../../flight/mesh/struct.Mesh.html" title="struct flight::mesh::Mesh">Mesh</a>&lt;R, E::<a class="type" href="../../flight/draw/trait.Style.html#associatedtype.Vertex" title="type flight::draw::Style::Vertex">Vertex</a>, E::<a class="type" href="../../flight/draw/trait.Style.html#associatedtype.Material" title="type flight::draw::Style::Material">Material</a>&gt;<br>) <span class="where fmt-newline">where<br>&nbsp;&nbsp;&nbsp;&nbsp;C: <a class="trait" href="../../gfx_core/command/trait.Buffer.html" title="trait gfx_core::command::Buffer">CommandBuffer</a>&lt;R&gt;,&nbsp;</span></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#121-132' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Draw a mesh with the given parameters and model matrix, logging any errors.</p>
+</div><h4 id='method.cfg' class="method"><span id='cfg.v' class='invisible'><code>pub fn <a href='#method.cfg' class='fnname'>cfg</a>&lt;F:&nbsp;<a class="trait" href="https://doc.rust-lang.org/nightly/core/ops/function/trait.FnOnce.html" title="trait core::ops::function::FnOnce">FnOnce</a>(&amp;mut E::<a class="type" href="../../flight/draw/trait.Style.html#associatedtype.Inputs" title="type flight::draw::Style::Inputs">Inputs</a>)&gt;(&amp;self, f: F)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/draw/mod.rs.html#137-139' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Configure the draw style. For example, <code>cfg(|c| c.ambient([1., 0., 0., 1.]))</code> 
+might set the ambient light color to red. The exact customization available
+depends on the style being used.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

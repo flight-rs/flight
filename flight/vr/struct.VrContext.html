@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `VrContext` struct in crate `flight`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, VrContext">
+
+    <title>flight::vr::VrContext - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc struct">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Struct VrContext</p><div class="sidebar-elems"><div class="block items"><a class="sidebar-title" href="#fields">Fields</a><div class="sidebar-links"><a href="#structfield.near">near</a><a href="#structfield.far">far</a></div><a class="sidebar-title" href="#methods">Methods</a><div class="sidebar-links"><a href="#method.init">init</a><a href="#method.new">new</a><a href="#method.mock">mock</a><a href="#method.set_texture">set_texture</a><a href="#method.start">start</a><a href="#method.stop">stop</a><a href="#method.retrieve_size">retrieve_size</a><a href="#method.sync">sync</a></div></div><p class='location'><a href='../index.html'>flight</a>::<wbr><a href='index.html'>vr</a></p><script>window.sidebarCurrent = {name: 'VrContext', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script></div>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>flight</a>::<wbr><a href='index.html'>vr</a>::<wbr><a class="struct" href=''>VrContext</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../../src/flight/vr.rs.html#11-21' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct VrContext {
+    pub near: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>,
+    pub far: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a>,
+    // some fields omitted
+}</pre><div class='docblock'><p>Provides access to VR hardware.</p>
+</div><h2 id='fields' class='fields small-section-header'>
+                       Fields<a href='#fields' class='anchor'></a></h2><span id="structfield.near" class="structfield small-section-header">
+                           <a href="#structfield.near" class="anchor field"></a>
+                           <span id="near.v" class='invisible'>
+                           <code>near: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a></code>
+                           </span></span><div class='docblock'><p>Set the eyes&#39; near clipping plane</p>
+</div><span id="structfield.far" class="structfield small-section-header">
+                           <a href="#structfield.far" class="anchor field"></a>
+                           <span id="far.v" class='invisible'>
+                           <code>far: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.f64.html">f64</a></code>
+                           </span></span><div class='docblock'><p>Set the eyes&#39; far clipping plane</p>
+</div>
+                    <h2 id='methods' class='small-section-header'>
+                      Methods<a href='#methods' class='anchor'></a>
+                    </h2>
+                <h3 id='impl' class='impl'><span class='in-band'><code>impl <a class="struct" href="../../flight/vr/struct.VrContext.html" title="struct flight::vr::VrContext">VrContext</a></code><a href='#impl' class='anchor'></a></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#29-202' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.init' class="method"><span id='init.v' class='invisible'><code>pub fn <a href='#method.init' class='fnname'>init</a>(vrsm: <a class="struct" href="../../rust_webvr/vr_manager/struct.VRServiceManager.html" title="struct rust_webvr::vr_manager::VRServiceManager">VRServiceManager</a>) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../flight/vr/struct.VrContext.html" title="struct flight::vr::VrContext">VrContext</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#30-48' title='goto source code'>[src]</a></span></h4>
+<h4 id='method.new' class="method"><span id='new.v' class='invisible'><code>pub fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../flight/vr/struct.VrContext.html" title="struct flight::vr::VrContext">VrContext</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#51-55' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Connect to default hardware devices.</p>
+</div><h4 id='method.mock' class="method"><span id='mock.v' class='invisible'><code>pub fn <a href='#method.mock' class='fnname'>mock</a>() -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="../../flight/vr/struct.VrContext.html" title="struct flight::vr::VrContext">VrContext</a>&gt;</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#58-62' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Connect to a mock HMD.</p>
+</div><h4 id='method.set_texture' class="method"><span id='set_texture.v' class='invisible'><code>pub fn <a href='#method.set_texture' class='fnname'>set_texture</a>(&amp;mut self, texture_id: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#65-68' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Set the OpenGL texture id to display on the HMD.</p>
+</div><h4 id='method.start' class="method"><span id='start.v' class='invisible'><code>pub fn <a href='#method.start' class='fnname'>start</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#71-78' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Start drawing to the HMD.</p>
+</div><h4 id='method.stop' class="method"><span id='stop.v' class='invisible'><code>pub fn <a href='#method.stop' class='fnname'>stop</a>(&amp;mut self)</code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#81-84' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Stop drawing to the HMD.</p>
+</div><h4 id='method.retrieve_size' class="method"><span id='retrieve_size.v' class='invisible'><code>pub fn <a href='#method.retrieve_size' class='fnname'>retrieve_size</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">(</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>, <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a><a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.tuple.html">)</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#87-89' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Retrieve the HMD device from the hardware API.</p>
+</div><h4 id='method.sync' class="method"><span id='sync.v' class='invisible'><code>pub fn <a href='#method.sync' class='fnname'>sync</a>(&amp;mut self) -&gt; <a class="struct" href="../../flight/vr/struct.VrMoment.html" title="struct flight::vr::VrMoment">VrMoment</a></code></span><span class='out-of-band'><div class='ghost'></div><a class='srclink' href='../../src/flight/vr.rs.html#94-201' title='goto source code'>[src]</a></span></h4>
+<div class='docblock'><p>Synchronize with the hardware, returning transient details about the VR
+system at the specific moment in time. This data can be used directly or
+to update state variables.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>↑</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>↓</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>↹</dt>
+                    <dd>Switch tab</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt style="width:31px;">+ / -</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "flight";
+    </script>
+    <script src="../../main.js"></script>
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>
