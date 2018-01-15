@@ -5,10 +5,10 @@ use gfx::handle::{Buffer, DepthStencilView};
 use gfx::state::Rasterizer;
 use gfx::format::*;
 
-use nalgebra::{self as na, Rotation3, Vector3};
+use nalgebra::{self as na, Rotation3, Vector3, Matrix4};
 
 use super::{StyleInputs, Style, TransformBlock};
-use ::mesh::{Primitive, VertNTT};
+use ::mesh::{Primitive, MeshSource, Mesh, Indexing, Vert, VertNTT};
 use ::{Error, ColorFormat, DepthFormat, TargetRef, DepthRef, Texture};
 use ::util::NativeRepr;
 use std::mem::transmute;
@@ -31,9 +31,22 @@ gfx_defines!{
         sun_matrix: [[f32; 4]; 4] = "sun_matrix",
         sun_color: [f32; 4] = "sun_color",
         sun_in_env: f32 = "sun_in_env",
+        radiance_levels: i32 = "radiance_levels",
 
         gamma: f32 = "gamma",
         exposure: f32 = "exposure",
+    }
+
+    pipeline bg {
+        verts: gfx::VertexBuffer<Vert> = (),
+        transform: gfx::ConstantBuffer<TransformBlock> = "transform",
+        params: gfx::ConstantBuffer<ParamsBlock> = "params",
+        scissor: gfx::Scissor = (), // TODO: Replace scissoring with viewport
+
+        color: gfx::RenderTarget<ColorFormat> = "f_color",
+        depth: gfx::DepthTarget<DepthFormat> = gfx::preset::depth::PASS_TEST,
+
+        radiance: gfx::TextureSampler<[f32; 3]> = "cube_map",
     }
 
     pipeline pl {
@@ -69,6 +82,13 @@ shader!(shader {
         .define_to("I_BITAN", "v_bitan")
 });
 
+shader!(bg_shader {
+    vertex: static_file!("shaders/transform.v.glsl")
+        .define_to("W_COORD", 0.),
+    fragment: static_file!("shaders/cubebg.f.glsl")
+        .define_to("I_POS", "v_pos")
+});
+
 /// The scene environment
 pub struct UberEnv<R: Resources> {
     pub irradiance: Texture<R, LumMapFormat>,
@@ -76,11 +96,13 @@ pub struct UberEnv<R: Resources> {
     pub sun_included: bool,
     pub sun_color: [f32; 4],
     pub sun_rotation: Rotation3<f32>,
+    pub radiance_levels: u8,
 }
 
 /// The configuration for physically based rendering
 pub struct UberInputs<R: Resources> {
     shaders: ShaderSet<R>,
+    background: UberBackground<R>,
     transform: Option<TransformBlock>,
     transform_block: Buffer<R, TransformBlock>,
     env: UberEnv<R>,
@@ -90,6 +112,12 @@ pub struct UberInputs<R: Resources> {
     params_block: Buffer<R, ParamsBlock>,
     integrated_brdf: Texture<R, (R8_G8, Unorm)>,
     shadow_depth: Texture<R, (D32, Float)>,
+}
+
+struct UberBackground<R: Resources> {
+    pso: PipelineState<R, bg::Meta>,
+    // shaders: ShaderSet<R>,
+    mesh: Mesh<R, Vert, ()>,
 }
 
 impl<R: Resources> UberInputs<R> {
@@ -186,8 +214,47 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             transmute::<[f32; 3], [u32; 3]>(bg_color)
         };
         let (_, shadow_depth) = shadow_texture(f);
+        let bg_shaders = bg_shader(f)?;
+        let bg_verts = vec![
+            Vert { pos: [-1., -1.,  1.] },
+            Vert { pos: [-1.,  1.,  1.] },
+            Vert { pos: [-1., -1., -1.] },
+            Vert { pos: [-1.,  1., -1.] },
+            Vert { pos: [ 1., -1.,  1.] },
+            Vert { pos: [ 1.,  1.,  1.] },
+            Vert { pos: [ 1., -1., -1.] },
+            Vert { pos: [ 1.,  1., -1.] },
+        ];
+        let bg_inds = vec![
+            1-1, 3-1, 2-1,
+            3-1, 7-1, 4-1,
+            7-1, 5-1, 8-1,
+            5-1, 1-1, 6-1,
+            3-1, 1-1, 7-1,
+            8-1, 6-1, 4-1,
+            3-1, 4-1, 2-1,
+            7-1, 8-1, 4-1,
+            5-1, 6-1, 8-1,
+            1-1, 2-1, 6-1,
+            1-1, 5-1, 7-1,
+            6-1, 2-1, 4-1,
+        ];
         Ok(UberInputs {
             shaders: shader(f)?,
+            background: UberBackground {
+                pso: f.create_pipeline_state(
+                    &bg_shaders,
+                    Primitive::TriangleList,
+                    Rasterizer::new_fill(),
+                    bg::new())?,
+                // shaders: bg_shaders,
+                mesh: MeshSource {
+                    verts: bg_verts,
+                    inds: Indexing::Inds(bg_inds),
+                    mat: (),
+                    prim: Primitive::TriangleList,
+                }.upload(f),
+            },
             transform: None,
             transform_block: f.create_constant_buffer(1),
             params_update: true,
@@ -204,6 +271,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
                     &Vector3::new(0., -1., 0.),
                 ).expect("Could not rotate axis"),
                 sun_included: false,
+                radiance_levels: 1,
             },
             shadow_depth: shadow_depth,
         })
@@ -234,6 +302,7 @@ impl<R: Resources> Style<R> for UberStyle<R> {
                 sun_in_env: if inputs.env.sun_included { 1. } else { 0. },
                 exposure: inputs.exposure,
                 gamma: inputs.gamma,
+                radiance_levels: inputs.env.radiance_levels as i32,
             });
         }
         enc.draw(slice, &self.pso, &pl::Data {
@@ -252,5 +321,34 @@ impl<R: Resources> Style<R> for UberStyle<R> {
             shadow_depth: inputs.shadow_depth.clone().into_tuple(),
         });
         Ok(())
+    }
+}
+
+impl<R: Resources> super::Painter<R, UberStyle<R>> {
+    pub fn clear_env<C: CommandBuffer<R>>(
+        &self,
+        ctx: &mut super::DrawParams<R, C>,
+    ) {
+        let inputs = self.inputs.borrow();
+        let bgin = &inputs.background;
+        for eye in &[&ctx.left, &ctx.right] {
+            let trans = TransformBlock {
+                eye: eye.eye.to_homogeneous().downgrade(),
+                model: Matrix4::identity().downgrade(),
+                view: eye.view.downgrade(),
+                proj: eye.proj.downgrade(),
+                clip_offset: eye.clip_offset,
+            };
+            ctx.encoder.update_constant_buffer(&inputs.transform_block, &trans);
+            ctx.encoder.draw(&bgin.mesh.slice, &bgin.pso, &bg::Data {
+                color: ctx.color.clone(),
+                depth: ctx.depth.clone(),
+                verts: bgin.mesh.buf.clone(),
+                scissor: eye.clip,
+                transform: inputs.transform_block.clone(),
+                params: inputs.params_block.clone(),
+                radiance: inputs.env.radiance.clone().into_tuple(),
+            });
+        }
     }
 }

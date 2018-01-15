@@ -14,7 +14,6 @@ use lib::vr::{primary, secondary, VrMoment, MappedController, Trackable};
 
 pub const NEAR_PLANE: f64 = 0.1;
 pub const FAR_PLANE: f64 = 1000.;
-pub const BACKGROUND: [f32; 4] = [0.529, 0.808, 0.980, 1.0];
 const PI: f32 = ::std::f32::consts::PI;
 const PI2: f32 = 2. * PI;
 const DEG: f32 = PI2 / 360.;
@@ -130,7 +129,8 @@ impl<R: gfx::Resources> App<R> {
         let mut uber: Painter<_, UberStyle<_>> = Painter::new(factory)?;
         uber.setup(factory, Primitive::TriangleList)?;
 
-        let radiance = load::load_hdr_cubemap(factory, 6, |side, level| {
+        let radiance_levels = 6;
+        let radiance = load::load_hdr_cubemap(factory, radiance_levels, |side, level| {
             let path = format!("assets/arches/radiance_{}_{}.hdr", level, side);
             Ok(BufReader::new(File::open(path)?))
         })?;
@@ -141,6 +141,7 @@ impl<R: gfx::Resources> App<R> {
         uber.cfg(|inputs| {
             let env = inputs.mut_env();
             env.radiance = radiance;
+            env.radiance_levels = radiance_levels;
             env.irradiance = irradiance;
             env.sun_included = false;
             env.sun_color = [1., 1., 1., 3.];
@@ -194,8 +195,8 @@ impl<R: gfx::Resources> App<R> {
 
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
-        ctx.encoder.clear(&ctx.color, [BACKGROUND[0].powf(1. / 2.2), BACKGROUND[1].powf(1. / 2.2), BACKGROUND[2].powf(1. / 2.2), BACKGROUND[3]]);
-
+        self.uber.clear_env(ctx);
+        
         // Draw grid
         self.solid.draw(ctx, na::one(), &self.grid);
 

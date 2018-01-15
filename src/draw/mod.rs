@@ -24,7 +24,7 @@ mod pbr;
 pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs, LIGHT_COUNT};
 
 mod uber;
-pub use self::uber::{UberStyle, UberMaterial, UberInputs};
+pub use self::uber::{UberStyle, UberMaterial, UberInputs, UberEnv};
 
 /// The painter is responsible for drawing meshes. Painters 
 /// are instantiated with an associated style which specifies

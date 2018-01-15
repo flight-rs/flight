@@ -25,6 +25,7 @@ layout(std140) uniform params {
     mat4 sun_matrix;
     vec4 sun_color;
     float sun_in_env;
+    int radiance_levels;
 
     float gamma;
     float exposure;
@@ -38,22 +39,22 @@ in vec3 I_BITAN;
 out vec4 f_color;
 
 vec3 fresnel_schlick(float cos_theta, vec3 f_0) {
-    return f_0 + (1 - f_0) * pow(1 - cos_theta, 5);
+    return f_0 + (1.0 - f_0) * pow(1 - cos_theta, 5);
 }
 
 float distribution_ggx(float cos_theta, float alpha) {
     float alpha2 = alpha * alpha;
     float cos_theta2 = cos_theta * cos_theta;
 
-    float denom = cos_theta2 * (alpha2 - 1) + 1;
+    float denom = cos_theta2 * (alpha2 - 1.0) + 1.0;
     denom = PI * denom * denom;
 
     return alpha2 / denom;
 }
 
 float geometry_schlick_ggx(float cos_theta, float alpha) {
-    float k = alpha / 2;
-    float denom = cos_theta * (1 - k) + k;
+    float k = alpha / 2.0;
+    float denom = cos_theta * (1.0 - k) + k;
     return cos_theta / denom;
 }
 
@@ -80,8 +81,8 @@ vec3 light_contrib(
     float ndf = distribution_ggx(NdotH, alpha);
     float geo = geometry_smith(NdotV, NdotL, alpha);
     vec3 fres = fresnel_schlick(NdotV, F0);
-    vec3 specular_brdf = ndf * geo * fres / (4 * NdotV * NdotL);
-    vec3 diffuse_brdf = NdotL * albedo * (vec3(1) - fres) * (1 - metalness);
+    vec3 specular_brdf = ndf * geo * fres / (4.0 * NdotV * NdotL);
+    vec3 diffuse_brdf = NdotL * albedo * (vec3(1.0) - fres) * (1.0 - metalness);
 
     // outgoing radiance
     return (diffuse_brdf + specular_brdf) * radiance;
@@ -105,26 +106,26 @@ void main() {
     vec3 N = normalize(norm);
     vec3 V = normalize(eye_pos.xyz - I_POS);
     float NdotV = abs(dot(N, V));
-    vec3 R = V - 2 * NdotV * N;
+    vec3 R = V - 2.0 * NdotV * N;
     NdotV = clamp(NdotV, 0.01, 1.0);
 
     // outgoing radiance
-    vec3 lum = vec3(0);
+    vec3 lum = vec3(0.0);
 
     // IBL
     // indirect diffuse
-    lum += texture(irradiance_map, N).rgb * albedo * (1 - metalness);
+    lum += texture(irradiance_map, N).rgb * albedo * (1.0 - metalness);
     vec2 env_brdf = texture(integrated_brdf_map, vec2(NdotV, roughness)).rg;
-    float lod = mix(0, 5, roughness);
+    float lod = mix(0, radiance_levels - 1, roughness);
     lum += textureLod(radiance_map, R, lod).rgb * (albedo * env_brdf.r + vec3(env_brdf.g));
 
     // sun shadow
-    vec4 sun_frag_pos = sun_matrix * vec4(I_POS, 1);
+    vec4 sun_frag_pos = sun_matrix * vec4(I_POS, 1.0);
     vec3 sun_frag_uv = sun_frag_pos.xyz / sun_frag_pos.w * 0.5 + 0.5; // position in shadow buffer
     float shadow_level = 1 /*texture(shadow_depth, sun_frag_uv)*/ - sun_in_env;
 
     // sun vectors
-    vec3 sun_L = -(sun_matrix * vec4(0, 0, -1, 0)).xyz;
+    vec3 sun_L = -(sun_matrix * vec4(0.0, 0.0, -1.0, 0.0)).xyz;
     vec3 sun_H = normalize(V + sun_L); // halfway vector
     float sun_NdotL = clamp(dot(N, sun_L), 0.01, 1.0);
     float sun_NdotH = clamp(dot(N, sun_H), 0.0, 1.0);
@@ -143,7 +144,7 @@ void main() {
     // hdr to ldr  
     vec3 mapped = vec3(1.0) - exp(-lum * exposure);
     //mapped = mix(mapped, albedo, solidness); // make solid
-    mapped = pow(mapped, vec3(1 / gamma));
+    mapped = pow(mapped, vec3(1.0 / gamma));
 
     f_color = vec4(mapped, 1.0);
 }

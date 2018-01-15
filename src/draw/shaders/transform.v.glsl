@@ -33,8 +33,12 @@ in vec3 a_bitan;
 out vec3 v_bitan;
 #endif
 
+#ifndef W_COORD
+#define W_COORD 1
+#endif
+
 void main() {
-    vec4 p = model * vec4(a_pos, 1);
+    vec4 p = model * vec4(a_pos, W_COORD);
     v_pos = p.xyz;
 
     #ifdef NORM
