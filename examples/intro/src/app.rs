@@ -22,6 +22,7 @@ pub struct App<R: gfx::Resources> {
     solid: Painter<R, SolidStyle<R>>,
     uber: Painter<R, UberStyle<R>>,
     grid: Mesh<R, VertC, ()>,
+    bg_mesh: Mesh<R, VertC, ()>,
     controller_grid: Mesh<R, VertC, ()>,
     arrow: Mesh<R, VertC, ()>,
     controller: UberMesh<R>,
@@ -131,11 +132,11 @@ impl<R: gfx::Resources> App<R> {
 
         let radiance_levels = 6;
         let radiance = load::load_hdr_cubemap(factory, radiance_levels, |side, level| {
-            let path = format!("assets/arches/radiance_{}_{}.hdr", level, side);
+            let path = format!("assets/uffizi/radiance_{}_{}.hdr", level, side);
             Ok(BufReader::new(File::open(path)?))
         })?;
         let irradiance = load::load_hdr_cubemap(factory, 1, |side, _| {
-            let path = format!("assets/arches/irradiance_{}.hdr", side);
+            let path = format!("assets/uffizi/irradiance_{}.hdr", side);
             Ok(BufReader::new(File::open(path)?))
         })?;
         uber.cfg(|inputs| {
@@ -147,11 +148,43 @@ impl<R: gfx::Resources> App<R> {
             env.sun_color = [1., 1., 1., 3.];
         });
 
+        let bg_verts = vec![
+            VertC { pos: [-10., -10.,  10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [-10.,  10.,  10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [-10., -10., -10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [-10.,  10., -10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [ 10., -10.,  10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [ 10.,  10.,  10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [ 10., -10., -10.], color: [0.6, 0.6, 0.6] },
+            VertC { pos: [ 10.,  10., -10.], color: [0.6, 0.6, 0.6] },
+        ];
+        let bg_inds = vec![
+            1-1, 3-1, 2-1,
+            3-1, 7-1, 4-1,
+            7-1, 5-1, 8-1,
+            5-1, 1-1, 6-1,
+            3-1, 1-1, 7-1,
+            8-1, 6-1, 4-1,
+            3-1, 4-1, 2-1,
+            7-1, 8-1, 4-1,
+            5-1, 6-1, 8-1,
+            1-1, 2-1, 6-1,
+            1-1, 5-1, 7-1,
+            6-1, 2-1, 4-1,
+        ];
+        let bg_mesh = MeshSource {
+            verts: bg_verts,
+            inds: Indexing::Inds(bg_inds),
+            mat: (),
+            prim: Primitive::TriangleList,
+        }.upload(factory);
+
         // Construct App
         Ok(App {
             solid: solid,
             uber: uber,
             grid: grid_lines(8, 8.).upload(factory),
+            bg_mesh: bg_mesh,
             controller_grid: grid_lines(2, 0.2).upload(factory),
             arrow: arrow().upload(factory),
             controller: load_my_simple_object(
@@ -195,10 +228,12 @@ impl<R: gfx::Resources> App<R> {
 
         // Clear targets
         ctx.encoder.clear_depth(&ctx.depth, FAR_PLANE as f32);
+        ctx.encoder.clear(&ctx.color, [0., 0., 0., 0.]);
         self.uber.clear_env(ctx);
         
         // Draw grid
         self.solid.draw(ctx, na::one(), &self.grid);
+        //self.solid.draw(ctx, na::one(), &self.bg_mesh);
 
         // Draw teapot
         let tearot =
@@ -210,7 +245,7 @@ impl<R: gfx::Resources> App<R> {
             na::convert(self.primary.pose * Similarity3::from_parts(
                 Translation3::new(0., 0., -0.25),
                 tearot,
-                (0.15 * self.primary.pad_theta().abs() as f32 / PI).max(0.001),
+                (0.3 * self.primary.pad_theta().abs() as f32 / PI).max(0.001),
             ))
         } else {
             Similarity3::from_parts(

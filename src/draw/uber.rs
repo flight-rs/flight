@@ -84,7 +84,7 @@ shader!(shader {
 
 shader!(bg_shader {
     vertex: static_file!("shaders/transform.v.glsl")
-        .define_to("W_COORD", 0.),
+        .define_to("W_COORD", 1.),
     fragment: static_file!("shaders/cubebg.f.glsl")
         .define_to("I_POS", "v_pos")
 });
@@ -216,14 +216,14 @@ impl<R: Resources> Style<R> for UberStyle<R> {
         let (_, shadow_depth) = shadow_texture(f);
         let bg_shaders = bg_shader(f)?;
         let bg_verts = vec![
-            Vert { pos: [-1., -1.,  1.] },
-            Vert { pos: [-1.,  1.,  1.] },
-            Vert { pos: [-1., -1., -1.] },
-            Vert { pos: [-1.,  1., -1.] },
-            Vert { pos: [ 1., -1.,  1.] },
-            Vert { pos: [ 1.,  1.,  1.] },
-            Vert { pos: [ 1., -1., -1.] },
-            Vert { pos: [ 1.,  1., -1.] },
+            Vert { pos: [-10., -10.,  10.] },
+            Vert { pos: [-10.,  10.,  10.] },
+            Vert { pos: [-10., -10., -10.] },
+            Vert { pos: [-10.,  10., -10.] },
+            Vert { pos: [ 10., -10.,  10.] },
+            Vert { pos: [ 10.,  10.,  10.] },
+            Vert { pos: [ 10., -10., -10.] },
+            Vert { pos: [ 10.,  10., -10.] },
         ];
         let bg_inds = vec![
             1-1, 3-1, 2-1,
@@ -331,6 +331,15 @@ impl<R: Resources> super::Painter<R, UberStyle<R>> {
     ) {
         let inputs = self.inputs.borrow();
         let bgin = &inputs.background;
+        let mat: Rotation3<f32> = na::convert(inputs.env.sun_rotation);
+        ctx.encoder.update_constant_buffer(&inputs.params_block, &ParamsBlock { 
+            sun_matrix: mat.to_homogeneous().downgrade(),
+            sun_color: inputs.env.sun_color,
+            sun_in_env: if inputs.env.sun_included { 1. } else { 0. },
+            exposure: inputs.exposure,
+            gamma: inputs.gamma,
+            radiance_levels: inputs.env.radiance_levels as i32,
+        });
         for eye in &[&ctx.left, &ctx.right] {
             let trans = TransformBlock {
                 eye: eye.eye.to_homogeneous().downgrade(),

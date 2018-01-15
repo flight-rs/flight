@@ -106,7 +106,7 @@ void main() {
     vec3 N = normalize(norm);
     vec3 V = normalize(eye_pos.xyz - I_POS);
     float NdotV = abs(dot(N, V));
-    vec3 R = V - 2.0 * NdotV * N;
+    vec3 R = 2.0 * NdotV * N - V;
     NdotV = clamp(NdotV, 0.01, 1.0);
 
     // outgoing radiance
@@ -138,7 +138,7 @@ void main() {
         sun_VdotH,
         sun_color.rgb * sun_color.a,
         albedo,
-        alpha,
+        max(alpha, 0.0025),
         metalness);
 
     // hdr to ldr  

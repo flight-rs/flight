@@ -24,7 +24,8 @@ void main() {
     vec3 B = normalize(I_POS);
     vec3 L = -(sun_matrix * vec4(0.0, 0.0, -1.0, 0.0)).xyz;
     float sun_dot = dot(B, L);
-    vec3 sun_lum = vec3(1.0, 1.0, 1.0);
+    vec3 sun_lum = sun_color.rgb * sun_color.a;
+    sun_lum *= 1.0 - sun_in_env;
 
     float ratio = length(sun_lum);
     float edge = 1.0 - base_edge * ratio;
