@@ -4,9 +4,10 @@ use gfx::traits::FactoryExt;
 use gfx::state::Rasterizer;
 use nalgebra::{Transform3};
 use fnv::FnvHashMap;
+use failure::Fail;
 use std::cell::RefCell;
 
-use ::{DepthRef, TargetRef, Error, NativeRepr};
+use ::{DepthRef, TargetRef, Error, FlightError, NativeRepr};
 use ::mesh::{Mesh, Vertex};
 
 #[macro_use]
@@ -26,7 +27,7 @@ pub use self::pbr::{PbrStyle, PbrMaterial, PbrInputs, LIGHT_COUNT};
 mod uber;
 pub use self::uber::{UberStyle, UberMaterial, UberInputs, UberEnv};
 
-/// The painter is responsible for drawing meshes. Painters 
+/// The painter is responsible for drawing meshes. Painters
 /// are instantiated with an associated style which specifies
 /// the data required for drawing (vertex type, material params,
 /// configuration) and implements the drawing pipeline. Note that
@@ -38,7 +39,7 @@ pub struct Painter<R: Resources, E: Style<R>> {
 }
 
 impl<R: Resources, E: Style<R>> Painter<R, E> {
-    /// Create a new painter in the given style and using the given factory. 
+    /// Create a new painter in the given style and using the given factory.
     pub fn new<F: Factory<R> + FactoryExt<R>>(f: &mut F) -> Result<Painter<R, E>, Error> {
         Ok(Painter {
             inputs: RefCell::new(E::init(f)?),
@@ -111,8 +112,9 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
             Ok(())
         } else {
             Err(
-                Error::invalid_primitive(mesh.prim)
+                FlightError::InvalidPrimitive { given: mesh.prim }
                 .context("setup has not been done for this primitive type".to_owned())
+                .into()
             )
         }
     }
@@ -131,7 +133,7 @@ impl<R: Resources, E: Style<R>> Painter<R, E> {
         }
     }
 
-    /// Configure the draw style. For example, `cfg(|c| c.ambient([1., 0., 0., 1.]))` 
+    /// Configure the draw style. For example, `cfg(|c| c.ambient([1., 0., 0., 1.]))`
     /// might set the ambient light color to red. The exact customization available
     /// depends on the style being used.
     pub fn cfg<F: FnOnce(&mut E::Inputs)>(&self, f: F) {

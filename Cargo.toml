@@ -8,16 +8,18 @@ authors = [
 ]
 
 [dependencies]
-nalgebra = "^0.13.0"
-gfx = "^0.17.1"
-log = "^0.3.8"
-obj = "^0.8.0"
-fnv = "^1.0.5"
-image = "^0.15.0"
-rust-webvr = "^0.9.6"
+nalgebra = "0.14"
+gfx = "0.17"
+log = "0.3"
+obj = "0.8"
+fnv = "^1.0"
+image = "0.18"
+rust-webvr = "0.9"
+failure = "0.1"
+failure_derive = "0.1"
 
 [dev-dependencies]
-approx = "^0.1.1"
+approx = "0.1"
 
 [workspace]
 members = ["examples/*"]

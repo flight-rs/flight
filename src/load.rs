@@ -10,11 +10,11 @@ use std::path::Path;
 use std::fmt;
 use std::mem;
 
-use ::{Error, Texture};
+use ::{Error, FlightError, Texture};
 use ::mesh::{Mesh, MeshSource, Indexing, VertNT, VertNTT, Primitive};
 use ::draw;
 
-/// Load wavefront OBJ data into an internal mesh object 
+/// Load wavefront OBJ data into an internal mesh object
 pub fn load_wavefront(obj: &Obj<SimplePolygon>) -> Result<MeshSource<VertNT, ()>, Error> {
     let mut verts = Vec::new();
     let mut ind_look = FnvHashMap::default();
@@ -57,7 +57,7 @@ pub fn load_integrated_brdf<R, F>(f: &mut F)
         .pixels()
         .map(|p| [p.data[0], p.data[1]])
         .collect();
-    
+
     use gfx::texture::*;
     let (_, shader_resource) = f.create_texture_immutable
         ::<(R8_G8, Unorm)>(
@@ -82,7 +82,7 @@ pub fn load_rgba8<R, F, T>(f: &mut F, image: RgbaImage, sampler: Sampler<R>)
         (R8_G8_B8_A8, T): Formatted,
         <(R8_G8_B8_A8, T) as Formatted>::Channel: TextureChannel,
         <(R8_G8_B8_A8, T) as Formatted>::Surface: TextureSurface,
-{    
+{
     use gfx::texture::*;
     let (width, height) = image.dimensions();
     let (_, shader_resource) = f.create_texture_immutable_u8
@@ -194,9 +194,10 @@ pub fn load_hdr_cubemap<R, F, B, S>(f: &mut F, levels: u8, source: S)
             // Calculate and verify image size
             let mut size = *size.get_or_insert(meta.width);
             size /= 1 << l;
-            if meta.width != size || meta.height != size {
-                return Err(Error::cube_size(size))
-            }
+            ensure!(
+                meta.width == size && meta.height == size,
+                FlightError::CubemapSizeMismatch { expected: size }
+            );
 
             // Warning! Use of transmute.
             // Make very very sure memory layout is the same.

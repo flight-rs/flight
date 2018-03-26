@@ -11,9 +11,7 @@ macro_rules! shader {
 
 macro_rules! single_shader {
     ($f:ident, $c:ident, $s:expr) => ({
-        let name = $s.name.clone();
-        $f.$c(&$s.build().into_bytes())
-            .map_err(move |e| (e, name))?
+        $f.$c(&$s.build().into_bytes())?
     })
 }
 

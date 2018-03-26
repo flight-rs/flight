@@ -8,6 +8,10 @@ extern crate obj as wavefront;
 extern crate fnv;
 extern crate image;
 extern crate rust_webvr as webvr;
+#[macro_use]
+extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
@@ -21,9 +25,8 @@ pub mod mesh;
 /// VR hardware interface
 pub mod vr;
 
-#[macro_use]
 mod error;
-pub use self::error::*;
+pub use error::FlightError;
 
 mod util;
 pub use self::util::*;
@@ -32,6 +35,7 @@ use gfx::shade::core::CreateShaderError;
 use gfx::handle::*;
 use gfx::format::*;
 use nalgebra::{Point3, UnitQuaternion, Point2};
+pub use failure::Error;
 
 /// The pixel format of color drawing targets
 pub type ColorFormat = (R8_G8_B8_A8, Unorm);
@@ -83,7 +87,7 @@ impl Default for Sun {
     }
 }
 
-/// GPU-allocated texture object. Since this is just a reference to assets stored on the GPU, 
+/// GPU-allocated texture object. Since this is just a reference to assets stored on the GPU,
 /// its memory footprint is negligible and it can be cloned freely.
 #[derive(Clone)]
 pub struct Texture<R, T>
